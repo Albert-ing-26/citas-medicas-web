@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Iniciar sesion - Citas Medicas</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="login-box">
+    <h1>Citas Medicas</h1>
+    <% if (error) { %>
+      <p class="error"><%= error %></p>
+    <% } %>
+    <form action="/login" method="POST">
+      <label for="correo">Correo</label>
+      <input type="email" name="correo" id="correo" required>
+
+      <label for="password">Contrasena</label>
+      <input type="password" name="password" id="password" required>
+
+      <button type="submit">Ingresar</button>
+    </form>
+  </div>
+</body>
+</html>
