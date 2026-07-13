@@ -1223,47 +1223,14 @@ body.pagina-login {
   gap: 12px;
 }
 
-.jax-welcome-overlay {
+.jax-assistant-shell {
   position: fixed;
-  inset: 0;
-  z-index: 220;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 24px;
-  background: rgba(11, 24, 24, 0.68);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  opacity: 1;
-  transition: opacity 0.4s ease;
-}
-
-.jax-welcome-overlay.is-hidden {
-  opacity: 0;
-}
-
-.jax-welcome-card {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  background: rgba(255, 255, 255, 0.97);
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  border-radius: 28px;
-  padding: 24px 28px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
-  max-width: 760px;
-  width: 100%;
-}
-
-.jax-welcome-portrait {
-  flex-shrink: 0;
-  display: grid;
-  place-items: center;
-  width: 240px;
-  height: 240px;
-  border-radius: 28px;
-  background: linear-gradient(135deg, #f2fbfa 0%, #def3eb 100%);
-  box-shadow: inset 0 2px 10px rgba(255,255,255,0.8);
+  justify-content: flex-end;
 }
 
 .jax-doctor-svg {
@@ -1277,35 +1244,53 @@ body.pagina-login {
 }
 
 .jax-thought-bubble {
-  position: relative;
-  background: linear-gradient(135deg, #ffffff 0%, #f5fffc 100%);
+  position: absolute;
+  right: 95px;
+  bottom: 15px;
+  width: 320px;
+  max-width: 90vw;
+  height: auto;
+  padding: 15px 20px;
+  border-radius: 16px;
+  background-color: #ffffff;
   border: 1px solid #dcefe9;
-  border-radius: 24px;
-  padding: 18px 22px;
-  box-shadow: 0 12px 28px rgba(15, 118, 110, 0.12);
-  min-height: 120px;
-  display: flex;
-  align-items: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  opacity: 0;
+  transform: translateY(8px) scale(0.96);
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  white-space: normal;
+  word-wrap: break-word;
 }
 
-.jax-thought-bubble::before {
-  content: '';
+.jax-thought-bubble::after {
+  content: "";
   position: absolute;
-  left: -12px;
-  top: 40px;
-  width: 20px;
-  height: 20px;
-  background: inherit;
-  border-left: 1px solid #dcefe9;
-  border-bottom: 1px solid #dcefe9;
-  transform: rotate(45deg);
+  right: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-width: 8px 0 8px 8px;
+  border-style: solid;
+  border-color: transparent transparent transparent #ffffff;
+}
+
+.jax-thought-bubble.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.jax-thought-bubble.is-hidden {
+  opacity: 0;
+  transform: translateY(8px) scale(0.96);
+  pointer-events: none;
 }
 
 .jax-thought-bubble p {
   margin: 0;
-  color: var(--ink);
-  font-size: 17px;
-  line-height: 1.55;
+  color: #1e293b;
+  font-size: 14px;
+  line-height: 1.45;
   font-weight: 600;
 }
 
@@ -1319,16 +1304,7 @@ body.pagina-login {
   display: grid;
   place-items: center;
   cursor: pointer;
-  transition: transform 0.25s ease, box-shadow 0.25s ease, opacity 0.25s ease;
-  opacity: 0;
-  transform: scale(0.88);
-  pointer-events: none;
-}
-
-.jax-floating-button.is-visible {
-  opacity: 1;
-  transform: scale(1);
-  pointer-events: auto;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .jax-floating-button:hover {
@@ -1475,28 +1451,13 @@ body.pagina-login {
   cursor: pointer;
 }
 
-@media (max-width: 760px) {
-  .jax-welcome-card {
-    flex-direction: column;
-    text-align: center;
-    padding: 20px;
-  }
-
-  .jax-thought-bubble::before {
-    left: 50%;
-    top: -12px;
-    transform: translateX(-50%) rotate(135deg);
-  }
-}
-
 @media (max-width: 640px) {
   .chatbot-shell { right: 16px; bottom: 16px; }
   .chatbox-window { width: min(300px, calc(100vw - 24px)); }
-  .jax-welcome-card { padding: 18px; }
-  .jax-welcome-portrait { width: 180px; height: 180px; }
-  .jax-doctor-svg { width: 140px; height: 140px; }
-  .jax-floating-button { width: 74px; height: 74px; }
-  .jax-doctor-svg-small { width: 70px; height: 70px; }
+  .jax-assistant-shell { right: 16px; bottom: 16px; }
+  .jax-thought-bubble { max-width: min(220px, calc(100vw - 56px)); }
+  .jax-floating-button { width: 78px; height: 78px; }
+  .jax-doctor-svg-small { width: 74px; height: 74px; }
 }
 
 /* ---------------------------------------------------------
