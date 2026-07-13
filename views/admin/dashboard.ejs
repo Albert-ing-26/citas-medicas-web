@@ -9,8 +9,15 @@
   <h1>Bienvenido, <%= usuario.nombre %> (Administrador)</h1>
   <nav>
     <a href="/admin">Inicio</a> |
+    <a href="/admin/especialidades">Especialidades</a> |
+    <a href="/admin/medicos">Medicos</a> |
+    <a href="/admin/pacientes">Pacientes</a> |
+    <a href="/admin/reportes">Reportes</a> |
     <a href="/logout">Cerrar sesion</a>
   </nav>
-  <p>Aqui iran los modulos: gestionar medicos, pacientes, especialidades y reportes.</p>
+  <div class="contenido">
+    <p>Desde aqui puedes gestionar especialidades, medicos y pacientes, y revisar los reportes de citas.</p>
+    <a href="/admin/reportes" class="boton">Ver reportes de citas</a>
+  </div>
 </body>
 </html>

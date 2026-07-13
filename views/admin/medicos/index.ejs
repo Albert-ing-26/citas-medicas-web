@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Medicos - Panel Administrador</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <h1>Bienvenido, <%= usuario.nombre %> (Administrador)</h1>
+  <nav>
+    <a href="/admin">Inicio</a> |
+    <a href="/admin/especialidades">Especialidades</a> |
+    <a href="/admin/medicos">Medicos</a> |
+    <a href="/logout">Cerrar sesion</a>
+  </nav>
+
+  <div class="contenido">
+    <h2>Medicos</h2>
+
+    <% if (error) { %>
+      <p class="error"><%= error %></p>
+    <% } %>
+
+    <a class="boton" href="/admin/medicos/nuevo">+ Nuevo medico</a>
+
+    <table class="tabla">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Especialidad</th>
+          <th>Colegiatura</th>
+          <th>Correo</th>
+          <th>Telefono</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% medicos.forEach(m => { %>
+          <tr>
+            <td><%= m.nombre %> <%= m.apellidos %></td>
+            <td><%= m.especialidad %></td>
+            <td><%= m.colegiatura %></td>
+            <td><%= m.correo %></td>
+            <td><%= m.telefono || '-' %></td>
+            <td>
+              <a href="/admin/medicos/<%= m.id_medico %>/editar">Editar</a>
+              <form action="/admin/medicos/<%= m.id_medico %>/eliminar" method="POST"
+                    style="display:inline"
+                    onsubmit="return confirm('Seguro que deseas eliminar este medico? Tambien se borrara su cuenta de acceso.');">
+                <button type="submit" class="link-eliminar">Eliminar</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+        <% if (medicos.length === 0) { %>
+          <tr><td colspan="6">No hay medicos registrados todavia.</td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

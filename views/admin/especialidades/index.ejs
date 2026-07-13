@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Especialidades - Panel Administrador</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <h1>Bienvenido, <%= usuario.nombre %> (Administrador)</h1>
+  <nav>
+    <a href="/admin">Inicio</a> |
+    <a href="/admin/especialidades">Especialidades</a> |
+    <a href="/logout">Cerrar sesion</a>
+  </nav>
+
+  <div class="contenido">
+    <h2>Especialidades</h2>
+
+    <% if (error) { %>
+      <p class="error"><%= error %></p>
+    <% } %>
+
+    <a class="boton" href="/admin/especialidades/nueva">+ Nueva especialidad</a>
+
+    <table class="tabla">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Duracion de cita (min)</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% especialidades.forEach(esp => { %>
+          <tr>
+            <td><%= esp.nombre %></td>
+            <td><%= esp.duracion_cita_minutos %></td>
+            <td>
+              <a href="/admin/especialidades/<%= esp.id_especialidad %>/editar">Editar</a>
+              <form action="/admin/especialidades/<%= esp.id_especialidad %>/eliminar" method="POST"
+                    style="display:inline"
+                    onsubmit="return confirm('Seguro que deseas eliminar esta especialidad?');">
+                <button type="submit" class="link-eliminar">Eliminar</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+        <% if (especialidades.length === 0) { %>
+          <tr><td colspan="3">No hay especialidades registradas todavia.</td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

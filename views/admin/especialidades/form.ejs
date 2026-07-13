@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title><%= especialidad ? 'Editar' : 'Nueva' %> especialidad</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <h1>Bienvenido, <%= usuario.nombre %> (Administrador)</h1>
+  <nav>
+    <a href="/admin">Inicio</a> |
+    <a href="/admin/especialidades">Especialidades</a> |
+    <a href="/logout">Cerrar sesion</a>
+  </nav>
+
+  <div class="contenido">
+    <h2><%= especialidad && especialidad.id_especialidad ? 'Editar especialidad' : 'Nueva especialidad' %></h2>
+
+    <% if (error) { %>
+      <p class="error"><%= error %></p>
+    <% } %>
+
+    <form class="formulario"
+          action="<%= especialidad && especialidad.id_especialidad
+              ? '/admin/especialidades/' + especialidad.id_especialidad + '/editar'
+              : '/admin/especialidades/nueva' %>"
+          method="POST">
+
+      <label for="nombre">Nombre</label>
+      <input type="text" id="nombre" name="nombre" required
+             value="<%= especialidad ? especialidad.nombre : '' %>">
+
+      <label for="duracion_cita_minutos">Duracion de cada cita (minutos)</label>
+      <input type="number" id="duracion_cita_minutos" name="duracion_cita_minutos"
+             min="5" max="240" required
+             value="<%= especialidad ? especialidad.duracion_cita_minutos : 30 %>">
+
+      <button type="submit">Guardar</button>
+      <a href="/admin/especialidades" class="cancelar">Cancelar</a>
+    </form>
+  </div>
+</body>
+</html>

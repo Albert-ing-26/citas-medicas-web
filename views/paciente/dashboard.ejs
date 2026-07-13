@@ -9,8 +9,13 @@
   <h1>Bienvenido, <%= usuario.nombre %></h1>
   <nav>
     <a href="/paciente">Inicio</a> |
+    <a href="/paciente/reservar">Reservar cita</a> |
+    <a href="/paciente/mis-citas">Mis citas</a> |
     <a href="/logout">Cerrar sesion</a>
   </nav>
-  <p>Aqui iran tus opciones: reservar cita y ver mis citas.</p>
+  <div class="contenido">
+    <p>Desde aqui puedes reservar una nueva cita con el medico que necesites, o revisar el estado de tus citas.</p>
+    <a href="/paciente/reservar" class="boton">Reservar una cita</a>
+  </div>
 </body>
 </html>

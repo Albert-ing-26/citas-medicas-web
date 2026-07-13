@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Mis citas</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <h1>Bienvenido, <%= usuario.nombre %></h1>
+  <nav>
+    <a href="/paciente">Inicio</a> |
+    <a href="/paciente/reservar">Reservar cita</a> |
+    <a href="/paciente/mis-citas">Mis citas</a> |
+    <a href="/logout">Cerrar sesion</a>
+  </nav>
+
+  <div class="contenido">
+    <h2>Mis citas</h2>
+
+    <% if (mensaje) { %>
+      <p class="nota"><%= mensaje %></p>
+    <% } %>
+
+    <table class="tabla">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Hora</th>
+          <th>Medico</th>
+          <th>Especialidad</th>
+          <th>Motivo</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% citas.forEach(c => { %>
+          <tr>
+            <td><%= c.fecha.toISOString ? c.fecha.toISOString().substring(0,10) : c.fecha %></td>
+            <td><%= c.hora_inicio.substring(0,5) %> - <%= c.hora_fin.substring(0,5) %></td>
+            <td>Dr(a). <%= c.medico_nombre %> <%= c.medico_apellidos %></td>
+            <td><%= c.especialidad %></td>
+            <td><%= c.motivo_consulta %></td>
+            <td>
+              <span class="estado-<%= c.estado === 'cancelada' ? 'bloqueado' : 'activo' %>">
+                <%= c.estado %>
+              </span>
+            </td>
+            <td>
+              <% if (c.estado === 'pendiente' || c.estado === 'confirmada') { %>
+                <form action="/paciente/mis-citas/<%= c.id_cita %>/cancelar" method="POST"
+                      style="display:inline"
+                      onsubmit="return confirm('Seguro que deseas cancelar esta cita?');">
+                  <button type="submit" class="link-eliminar">Cancelar</button>
+                </form>
+              <% } else { %>
+                -
+              <% } %>
+            </td>
+          </tr>
+        <% }) %>
+        <% if (citas.length === 0) { %>
+          <tr><td colspan="7">Todavia no tienes citas reservadas.</td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

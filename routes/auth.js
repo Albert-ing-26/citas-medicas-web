@@ -49,4 +49,60 @@ router.get('/logout', (req, res) => {
   });
 });
 
+// ------------------- REGISTRO DE PACIENTE (auto-registro) -------------------
+
+router.get('/registro', (req, res) => {
+  res.render('registro', { error: null, datos: {} });
+});
+
+router.post('/registro', async (req, res) => {
+  const { nombre, apellidos, correo, password, telefono, dni, fecha_nacimiento, direccion } = req.body;
+
+  if (!nombre || !apellidos || !correo || !password || !dni) {
+    return res.render('registro', {
+      error: 'Nombre, apellidos, correo, DNI y contrasena son obligatorios',
+      datos: req.body
+    });
+  }
+
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    const hash = await bcrypt.hash(password, 10);
+
+    const [resultUsuario] = await conn.query(
+      `INSERT INTO usuarios (nombre, apellidos, correo, contrasena_hash, telefono, rol)
+       VALUES (?, ?, ?, ?, ?, 'paciente')`,
+      [nombre, apellidos, correo, hash, telefono || null]
+    );
+
+    await conn.query(
+      `INSERT INTO pacientes (id_usuario, dni, fecha_nacimiento, direccion)
+       VALUES (?, ?, ?, ?)`,
+      [resultUsuario.insertId, dni, fecha_nacimiento || null, direccion || null]
+    );
+
+    await conn.commit();
+
+    // Autologin tras registrarse
+    req.session.usuario = {
+      id_usuario: resultUsuario.insertId,
+      nombre,
+      rol: 'paciente'
+    };
+    res.redirect('/paciente');
+
+  } catch (err) {
+    await conn.rollback();
+    console.error(err);
+    const mensaje = err.code === 'ER_DUP_ENTRY'
+      ? 'Ese correo o ese DNI ya estan registrados'
+      : 'Ocurrio un error al registrarte, intenta de nuevo';
+    res.render('registro', { error: mensaje, datos: req.body });
+  } finally {
+    conn.release();
+  }
+});
+
 module.exports = router;

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title><%= medico && medico.id_medico ? 'Editar' : 'Nuevo' %> medico</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <h1>Bienvenido, <%= usuario.nombre %> (Administrador)</h1>
+  <nav>
+    <a href="/admin">Inicio</a> |
+    <a href="/admin/especialidades">Especialidades</a> |
+    <a href="/admin/medicos">Medicos</a> |
+    <a href="/logout">Cerrar sesion</a>
+  </nav>
+
+  <div class="contenido">
+    <h2><%= medico && medico.id_medico ? 'Editar medico' : 'Nuevo medico' %></h2>
+
+    <% if (error) { %>
+      <p class="error"><%= error %></p>
+    <% } %>
+
+    <form class="formulario"
+          action="<%= medico && medico.id_medico
+              ? '/admin/medicos/' + medico.id_medico + '/editar'
+              : '/admin/medicos/nuevo' %>"
+          method="POST">
+
+      <label for="nombre">Nombre</label>
+      <input type="text" id="nombre" name="nombre" required
+             value="<%= medico ? medico.nombre : '' %>">
+
+      <label for="apellidos">Apellidos</label>
+      <input type="text" id="apellidos" name="apellidos" required
+             value="<%= medico ? medico.apellidos : '' %>">
+
+      <label for="correo">Correo</label>
+      <input type="email" id="correo" name="correo" required
+             value="<%= medico ? medico.correo : '' %>">
+
+      <label for="telefono">Telefono</label>
+      <input type="text" id="telefono" name="telefono"
+             value="<%= medico ? medico.telefono : '' %>">
+
+      <label for="id_especialidad">Especialidad</label>
+      <select id="id_especialidad" name="id_especialidad" required>
+        <% especialidades.forEach(e => { %>
+          <option value="<%= e.id_especialidad %>"
+            <%= medico && medico.id_especialidad == e.id_especialidad ? 'selected' : '' %>>
+            <%= e.nombre %>
+          </option>
+        <% }) %>
+      </select>
+
+      <label for="colegiatura">Numero de colegiatura</label>
+      <input type="text" id="colegiatura" name="colegiatura" required
+             value="<%= medico ? medico.colegiatura : '' %>">
+
+      <label for="password">
+        <%= medico && medico.id_medico ? 'Nueva contrasena (dejar vacio para no cambiarla)' : 'Contrasena' %>
+      </label>
+      <input type="password" id="password" name="password"
+             <%= medico && medico.id_medico ? '' : 'required' %>>
+
+      <button type="submit">Guardar</button>
+      <a href="/admin/medicos" class="cancelar">Cancelar</a>
+    </form>
+  </div>
+</body>
+</html>

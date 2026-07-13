@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Dias bloqueados</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <h1>Bienvenido, Dr(a). <%= usuario.nombre %></h1>
+  <nav>
+    <a href="/medico">Inicio</a> |
+    <a href="/medico/agenda">Mi agenda</a> |
+    <a href="/medico/dias-bloqueados">Dias bloqueados</a> |
+    <a href="/logout">Cerrar sesion</a>
+  </nav>
+
+  <div class="contenido">
+    <h2>Dias bloqueados</h2>
+    <p class="nota">Los pacientes no podran reservar citas contigo en estos dias. Si ya tenias citas agendadas antes de bloquear un dia, esas citas NO se cancelan automaticamente: revisalas tu mismo en tu agenda.</p>
+
+    <% if (error) { %>
+      <p class="error"><%= error %></p>
+    <% } %>
+    <% if (aviso) { %>
+      <p class="nota" style="color:#b45309;"><%= aviso %></p>
+    <% } %>
+
+    <form class="formulario" method="POST" action="/medico/dias-bloqueados/nuevo">
+      <label for="fecha">Fecha a bloquear</label>
+      <input type="date" id="fecha" name="fecha" required min="<%= hoy %>">
+
+      <label for="motivo">Motivo (opcional)</label>
+      <input type="text" id="motivo" name="motivo" placeholder="Ej: vacaciones, capacitacion">
+
+      <button type="submit">Bloquear dia</button>
+    </form>
+
+    <table class="tabla" style="margin-top:24px;">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Motivo</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% bloqueos.forEach(b => { %>
+          <tr>
+            <td><%= b.fecha.toISOString ? b.fecha.toISOString().substring(0,10) : b.fecha %></td>
+            <td><%= b.motivo || '-' %></td>
+            <td>
+              <form action="/medico/dias-bloqueados/<%= b.id_bloqueo %>/eliminar" method="POST"
+                    onsubmit="return confirm('Desbloquear este dia?');">
+                <button type="submit" class="link-eliminar">Desbloquear</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+        <% if (bloqueos.length === 0) { %>
+          <tr><td colspan="3">No tienes ningun dia bloqueado.</td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

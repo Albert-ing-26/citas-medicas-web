@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Mi agenda</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <h1>Bienvenido, Dr(a). <%= usuario.nombre %></h1>
+  <nav>
+    <a href="/medico">Inicio</a> |
+    <a href="/medico/agenda">Mi agenda</a> |
+    <a href="/medico/dias-bloqueados">Dias bloqueados</a> |
+    <a href="/logout">Cerrar sesion</a>
+  </nav>
+
+  <div class="contenido">
+    <h2>Mi agenda</h2>
+
+    <p>
+      <a href="/medico/agenda?fecha=<%= diaAnterior %>">&laquo; Dia anterior</a>
+      &nbsp;|&nbsp;
+      <a href="/medico/agenda?fecha=<%= diaSiguiente %>">Dia siguiente &raquo;</a>
+    </p>
+
+    <form method="GET" action="/medico/agenda" class="formulario" style="max-width:260px;">
+      <label for="fecha">Ver agenda del dia</label>
+      <input type="date" id="fecha" name="fecha" value="<%= fecha %>" onchange="this.form.submit()">
+    </form>
+
+    <% if (bloqueado) { %>
+      <p class="nota">Tienes este dia bloqueado<%= bloqueado.motivo ? ' (' + bloqueado.motivo + ')' : '' %>. No se pueden reservar nuevas citas ese dia.</p>
+    <% } %>
+
+    <table class="tabla">
+      <thead>
+        <tr>
+          <th>Hora</th>
+          <th>Paciente</th>
+          <th>DNI</th>
+          <th>Telefono</th>
+          <th>Motivo</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% citas.forEach(c => { %>
+          <tr>
+            <td><%= c.hora_inicio.substring(0,5) %> - <%= c.hora_fin.substring(0,5) %></td>
+            <td><%= c.paciente_nombre %> <%= c.paciente_apellidos %></td>
+            <td><%= c.dni %></td>
+            <td><%= c.telefono || '-' %></td>
+            <td><%= c.motivo_consulta %></td>
+            <td>
+              <span class="<%= (c.estado === 'cancelada') ? 'estado-bloqueado' : 'estado-activo' %>">
+                <%= c.estado %>
+              </span>
+            </td>
+            <td>
+              <% if (c.estado === 'pendiente') { %>
+                <form action="/medico/agenda/<%= c.id_cita %>/confirmar" method="POST" style="display:inline">
+                  <input type="hidden" name="fecha" value="<%= fecha %>">
+                  <button type="submit" class="link-accion">Confirmar</button>
+                </form>
+              <% } %>
+              <% if (c.estado === 'pendiente' || c.estado === 'confirmada') { %>
+                <form action="/medico/agenda/<%= c.id_cita %>/atender" method="POST" style="display:inline">
+                  <input type="hidden" name="fecha" value="<%= fecha %>">
+                  <button type="submit" class="link-accion">Marcar atendida</button>
+                </form>
+                <form action="/medico/agenda/<%= c.id_cita %>/cancelar" method="POST" style="display:inline"
+                      onsubmit="return confirm('Seguro que deseas cancelar esta cita?');">
+                  <input type="hidden" name="fecha" value="<%= fecha %>">
+                  <button type="submit" class="link-eliminar">Cancelar</button>
+                </form>
+              <% } %>
+              <% if (c.estado === 'atendida' || c.estado === 'cancelada') { %>
+                -
+              <% } %>
+            </td>
+          </tr>
+        <% }) %>
+        <% if (citas.length === 0) { %>
+          <tr><td colspan="7">No tienes citas agendadas para este dia.</td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

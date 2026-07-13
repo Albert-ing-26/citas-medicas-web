@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Reservar cita</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <h1>Bienvenido, <%= usuario.nombre %></h1>
+  <nav>
+    <a href="/paciente">Inicio</a> |
+    <a href="/paciente/reservar">Reservar cita</a> |
+    <a href="/paciente/mis-citas">Mis citas</a> |
+    <a href="/logout">Cerrar sesion</a>
+  </nav>
+
+  <div class="contenido">
+    <h2>Reservar una cita</h2>
+
+    <% if (error) { %>
+      <p class="error"><%= error %></p>
+    <% } %>
+
+    <form class="formulario" method="GET" action="/paciente/reservar">
+      <label for="id_especialidad">Especialidad</label>
+      <select id="id_especialidad" name="id_especialidad" required onchange="this.form.submit()">
+        <option value="">-- Selecciona --</option>
+        <% especialidades.forEach(e => { %>
+          <option value="<%= e.id_especialidad %>"
+            <%= String(seleccion.id_especialidad) === String(e.id_especialidad) ? 'selected' : '' %>>
+            <%= e.nombre %>
+          </option>
+        <% }) %>
+      </select>
+
+      <% if (seleccion.id_especialidad) { %>
+        <label for="id_medico">Medico</label>
+        <select id="id_medico" name="id_medico" required onchange="this.form.submit()">
+          <option value="">-- Selecciona --</option>
+          <% medicos.forEach(m => { %>
+            <option value="<%= m.id_medico %>"
+              <%= String(seleccion.id_medico) === String(m.id_medico) ? 'selected' : '' %>>
+              <%= m.nombre %> <%= m.apellidos %>
+            </option>
+          <% }) %>
+        </select>
+        <% if (medicos.length === 0) { %>
+          <p class="nota">No hay medicos activos registrados en esta especialidad todavia.</p>
+        <% } %>
+      <% } %>
+
+      <% if (seleccion.id_especialidad && seleccion.id_medico) { %>
+        <label for="fecha">Fecha</label>
+        <input type="date" id="fecha" name="fecha" required min="<%= hoy %>"
+               value="<%= seleccion.fecha || '' %>" onchange="this.form.submit()">
+      <% } %>
+    </form>
+
+    <% if (mensajeSlots) { %>
+      <p class="nota"><%= mensajeSlots %></p>
+    <% } %>
+
+    <% if (slots.length > 0) { %>
+      <h3>Horarios disponibles con <%= medicoSeleccionado.nombre %> <%= medicoSeleccionado.apellidos %> el <%= seleccion.fecha %></h3>
+      <form class="formulario" method="POST" action="/paciente/reservar">
+        <input type="hidden" name="id_especialidad" value="<%= seleccion.id_especialidad %>">
+        <input type="hidden" name="id_medico" value="<%= seleccion.id_medico %>">
+        <input type="hidden" name="fecha" value="<%= seleccion.fecha %>">
+
+        <label for="hora_inicio">Horario</label>
+        <select id="hora_inicio" name="hora_inicio" required>
+          <% slots.forEach(s => { %>
+            <option value="<%= s %>"><%= s.substring(0,5) %></option>
+          <% }) %>
+        </select>
+
+        <label for="motivo_consulta">Motivo de la consulta</label>
+        <input type="text" id="motivo_consulta" name="motivo_consulta" required
+               placeholder="Ej: dolor de cabeza persistente">
+
+        <button type="submit">Confirmar reserva</button>
+      </form>
+    <% } %>
+  </div>
+</body>
+</html>

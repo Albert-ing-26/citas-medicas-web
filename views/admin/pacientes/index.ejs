@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Pacientes - Panel Administrador</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <h1>Bienvenido, <%= usuario.nombre %> (Administrador)</h1>
+  <nav>
+    <a href="/admin">Inicio</a> |
+    <a href="/admin/especialidades">Especialidades</a> |
+    <a href="/admin/medicos">Medicos</a> |
+    <a href="/admin/pacientes">Pacientes</a> |
+    <a href="/logout">Cerrar sesion</a>
+  </nav>
+
+  <div class="contenido">
+    <h2>Pacientes</h2>
+    <p class="nota">Los pacientes se registran ellos mismos. Aqui solo puedes verlos, bloquear su acceso o eliminar su cuenta.</p>
+
+    <% if (error) { %>
+      <p class="error"><%= error %></p>
+    <% } %>
+
+    <table class="tabla">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>DNI</th>
+          <th>Correo</th>
+          <th>Telefono</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% pacientes.forEach(p => { %>
+          <tr>
+            <td><%= p.nombre %> <%= p.apellidos %></td>
+            <td><%= p.dni %></td>
+            <td><%= p.correo %></td>
+            <td><%= p.telefono || '-' %></td>
+            <td>
+              <span class="<%= p.activo ? 'estado-activo' : 'estado-bloqueado' %>">
+                <%= p.activo ? 'Activo' : 'Bloqueado' %>
+              </span>
+            </td>
+            <td>
+              <form action="/admin/pacientes/<%= p.id_paciente %>/bloquear" method="POST" style="display:inline">
+                <button type="submit" class="link-accion">
+                  <%= p.activo ? 'Bloquear' : 'Reactivar' %>
+                </button>
+              </form>
+              <form action="/admin/pacientes/<%= p.id_paciente %>/eliminar" method="POST"
+                    style="display:inline"
+                    onsubmit="return confirm('Seguro que deseas eliminar la cuenta de este paciente? Esta accion no se puede deshacer.');">
+                <button type="submit" class="link-eliminar">Eliminar</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+        <% if (pacientes.length === 0) { %>
+          <tr><td colspan="6">Todavia no hay pacientes registrados.</td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Reportes - Panel Administrador</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <h1>Bienvenido, <%= usuario.nombre %> (Administrador)</h1>
+  <nav>
+    <a href="/admin">Inicio</a> |
+    <a href="/admin/especialidades">Especialidades</a> |
+    <a href="/admin/medicos">Medicos</a> |
+    <a href="/admin/pacientes">Pacientes</a> |
+    <a href="/admin/reportes">Reportes</a> |
+    <a href="/logout">Cerrar sesion</a>
+  </nav>
+
+  <div class="contenido">
+    <h2>Reportes de citas</h2>
+
+    <form class="filtro-fechas" method="GET" action="/admin/reportes">
+      <div>
+        <label for="fecha_desde">Desde</label>
+        <input type="date" id="fecha_desde" name="fecha_desde" value="<%= fechaDesde %>">
+      </div>
+      <div>
+        <label for="fecha_hasta">Hasta</label>
+        <input type="date" id="fecha_hasta" name="fecha_hasta" value="<%= fechaHasta %>">
+      </div>
+      <button type="submit">Filtrar</button>
+      <a href="/admin/reportes" class="cancelar" style="align-self:center;">Ver todo</a>
+    </form>
+
+    <% if (totalCitas === 0) { %>
+      <p class="nota">No hay citas registradas en ese rango de fechas.</p>
+    <% } else { %>
+
+      <div class="tarjetas-resumen">
+        <div class="tarjeta">
+          <div class="numero"><%= totalCitas %></div>
+          <div class="etiqueta">Total de citas</div>
+        </div>
+        <% ['pendiente', 'confirmada', 'atendida', 'cancelada'].forEach(estado => { %>
+          <div class="tarjeta">
+            <div class="numero"><%= conteoEstados[estado] %></div>
+            <div class="etiqueta"><%= estado.charAt(0).toUpperCase() + estado.slice(1) %></div>
+          </div>
+        <% }) %>
+      </div>
+
+      <h3>Citas por estado</h3>
+      <table class="tabla" style="margin-bottom:32px;">
+        <thead>
+          <tr><th>Estado</th><th>Total</th><th style="width:40%;">Proporcion</th></tr>
+        </thead>
+        <tbody>
+          <% ['pendiente', 'confirmada', 'atendida', 'cancelada'].forEach(estado => { %>
+            <tr>
+              <td><%= estado.charAt(0).toUpperCase() + estado.slice(1) %></td>
+              <td><%= conteoEstados[estado] %></td>
+              <td>
+                <div class="barra-fondo">
+                  <div class="barra-relleno" style="width: <%= Math.round(conteoEstados[estado] / totalCitas * 100) %>%;"></div>
+                </div>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+
+      <h3>Citas por especialidad</h3>
+      <table class="tabla" style="margin-bottom:32px;">
+        <thead>
+          <tr><th>Especialidad</th><th>Total</th><th>Atendidas</th><th>Canceladas</th></tr>
+        </thead>
+        <tbody>
+          <% porEspecialidad.forEach(fila => { %>
+            <tr>
+              <td><%= fila.especialidad %></td>
+              <td><%= fila.total %></td>
+              <td><%= fila.atendidas %></td>
+              <td><%= fila.canceladas %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+
+      <h3>Citas por medico</h3>
+      <table class="tabla">
+        <thead>
+          <tr><th>Medico</th><th>Especialidad</th><th>Total</th><th>Atendidas</th><th>Canceladas</th></tr>
+        </thead>
+        <tbody>
+          <% porMedico.forEach(fila => { %>
+            <tr>
+              <td>Dr(a). <%= fila.nombre %> <%= fila.apellidos %></td>
+              <td><%= fila.especialidad %></td>
+              <td><%= fila.total %></td>
+              <td><%= fila.atendidas %></td>
+              <td><%= fila.canceladas %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+
+    <% } %>
+  </div>
+</body>
+</html>
