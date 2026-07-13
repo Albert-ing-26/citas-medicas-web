@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Mi perfil</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <h1>Mi perfil</h1>
+  <nav>
+    <a href="<%= usuario.rol === 'admin' ? '/admin' : usuario.rol === 'medico' ? '/medico' : '/paciente' %>">
+      &larr; Volver al panel
+    </a>
+  </nav>
+  <%- include('partials/perfil-widget') %>
+
+  <div class="contenido">
+    <% if (mensaje) { %>
+      <p class="exito"><%= mensaje %></p>
+    <% } %>
+    <% if (error) { %>
+      <p class="error"><%= error %></p>
+    <% } %>
+
+    <div class="perfil-grid">
+
+      <div class="tarjeta-perfil">
+        <h2>Datos personales</h2>
+        <form class="formulario" action="/perfil" method="POST">
+          <label for="nombre">Nombre</label>
+          <input type="text" id="nombre" name="nombre" required value="<%= perfil.nombre %>">
+
+          <label for="apellidos">Apellidos</label>
+          <input type="text" id="apellidos" name="apellidos" required value="<%= perfil.apellidos %>">
+
+          <label for="correo">Correo</label>
+          <input type="email" id="correo" name="correo" required value="<%= perfil.correo %>">
+
+          <label for="telefono">Telefono</label>
+          <input type="text" id="telefono" name="telefono" value="<%= perfil.telefono || '' %>">
+
+          <% if (perfil.rol === 'paciente') { %>
+            <label for="direccion">Direccion</label>
+            <input type="text" id="direccion" name="direccion" value="<%= perfil.extra ? (perfil.extra.direccion || '') : '' %>">
+          <% } %>
+
+          <button type="submit">Guardar cambios</button>
+        </form>
+
+        <% if (perfil.rol === 'paciente' && perfil.extra) { %>
+          <div class="datos-solo-lectura">
+            <p><strong>DNI:</strong> <%= perfil.extra.dni %></p>
+            <p><strong>Fecha de nacimiento:</strong>
+              <%= perfil.extra.fecha_nacimiento ? new Date(perfil.extra.fecha_nacimiento).toLocaleDateString('es-PE') : '-' %>
+            </p>
+            <p class="nota">El DNI y la fecha de nacimiento no se pueden editar. Si estan mal, contacta al administrador.</p>
+          </div>
+        <% } %>
+
+        <% if (perfil.rol === 'medico' && perfil.extra) { %>
+          <div class="datos-solo-lectura">
+            <p><strong>Especialidad:</strong> <%= perfil.extra.especialidad %></p>
+            <p><strong>Colegiatura:</strong> <%= perfil.extra.colegiatura %></p>
+            <p class="nota">La especialidad y la colegiatura las gestiona el administrador.</p>
+          </div>
+        <% } %>
+      </div>
+
+      <div class="tarjeta-perfil">
+        <h2>Cambiar contrasena</h2>
+        <form class="formulario" action="/perfil/password" method="POST">
+          <label for="password_actual">Contrasena actual</label>
+          <input type="password" id="password_actual" name="password_actual" required>
+
+          <label for="password_nueva">Nueva contrasena</label>
+          <input type="password" id="password_nueva" name="password_nueva" required minlength="6">
+
+          <label for="password_confirmar">Confirmar nueva contrasena</label>
+          <input type="password" id="password_confirmar" name="password_confirmar" required minlength="6">
+
+          <button type="submit">Cambiar contrasena</button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>

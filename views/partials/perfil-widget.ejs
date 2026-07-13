@@ -1,0 +1,14 @@
+<details class="perfil-widget">
+  <summary class="perfil-avatar" title="<%= usuario.nombre %>">
+    <%= usuario.nombre.charAt(0).toUpperCase() %>
+  </summary>
+  <div class="perfil-menu">
+    <div class="perfil-menu-nombre"><%= usuario.nombre %></div>
+    <div class="perfil-menu-rol">
+      <%= usuario.rol === 'admin' ? 'Administrador' : usuario.rol === 'medico' ? 'Medico' : 'Paciente' %>
+    </div>
+    <hr>
+    <a href="/perfil">Ver / editar perfil</a>
+    <a href="/logout">Cerrar sesion</a>
+  </div>
+</details>

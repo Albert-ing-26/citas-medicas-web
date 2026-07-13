@@ -7,6 +7,7 @@ const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
 const medicoRoutes = require('./routes/medico');
 const pacienteRoutes = require('./routes/paciente');
+const perfilRoutes = require('./routes/perfil');
 const { requireLogin } = require('./middlewares/auth');
 
 const app = express();
@@ -28,6 +29,7 @@ app.use(session({
 app.get('/', (req, res) => res.redirect('/login'));
 
 app.use('/', authRoutes);
+app.use('/perfil', requireLogin, perfilRoutes);
 app.use('/admin', requireLogin, adminRoutes);
 app.use('/medico', requireLogin, medicoRoutes);
 app.use('/paciente', requireLogin, pacienteRoutes);

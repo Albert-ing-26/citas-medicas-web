@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Solicitudes de bloqueo - Panel Administrador</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <h1>Bienvenido, <%= usuario.nombre %> (Administrador)</h1>
+  <nav>
+    <a href="/admin">Inicio</a> |
+    <a href="/admin/especialidades">Especialidades</a> |
+    <a href="/admin/medicos">Medicos</a> |
+    <a href="/admin/pacientes">Pacientes</a> |
+    <a href="/admin/solicitudes-bloqueo">Solicitudes</a> |
+    <a href="/admin/reportes">Reportes</a>
+  </nav>
+  <%- include('../partials/perfil-widget') %>
+
+  <div class="contenido">
+    <h2>Solicitudes de bloqueo de dias</h2>
+    <p class="nota">Cuando un medico solicita bloquear un dia, aparece aqui como pendiente. Mientras no la apruebes, los pacientes todavia pueden reservar con ese medico ese dia.</p>
+
+    <% if (error) { %>
+      <p class="error"><%= error %></p>
+    <% } %>
+
+    <table class="tabla">
+      <thead>
+        <tr>
+          <th>Medico</th>
+          <th>Especialidad</th>
+          <th>Fecha</th>
+          <th>Motivo</th>
+          <th>Citas agendadas ese dia</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% solicitudes.forEach(s => { %>
+          <tr>
+            <td><%= s.nombre %> <%= s.apellidos %></td>
+            <td><%= s.especialidad %></td>
+            <td><%= s.fecha.toISOString ? s.fecha.toISOString().substring(0,10) : s.fecha %></td>
+            <td><%= s.motivo || '-' %></td>
+            <td><%= s.citas_afectadas %></td>
+            <td>
+              <% if (s.estado === 'aprobado') { %>
+                <span class="estado-activo">Aprobado</span>
+              <% } else if (s.estado === 'pendiente') { %>
+                <span style="color:#b45309;font-weight:500;">Pendiente</span>
+              <% } else { %>
+                <span class="estado-bloqueado">Rechazado</span>
+              <% } %>
+            </td>
+            <td>
+              <% if (s.estado === 'pendiente') { %>
+                <form action="/admin/solicitudes-bloqueo/<%= s.id_bloqueo %>/aprobar" method="POST" style="display:inline">
+                  <button type="submit" class="link-accion">Aprobar</button>
+                </form>
+                <form action="/admin/solicitudes-bloqueo/<%= s.id_bloqueo %>/rechazar" method="POST"
+                      style="display:inline"
+                      onsubmit="return confirm('Rechazar esta solicitud de bloqueo?');">
+                  <button type="submit" class="link-eliminar">Rechazar</button>
+                </form>
+              <% } else { %>
+                <span class="nota">-</span>
+              <% } %>
+            </td>
+          </tr>
+        <% }) %>
+        <% if (solicitudes.length === 0) { %>
+          <tr><td colspan="7">No hay solicitudes de bloqueo todavia.</td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

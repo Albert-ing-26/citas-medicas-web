@@ -12,12 +12,104 @@
     <a href="/admin/especialidades">Especialidades</a> |
     <a href="/admin/medicos">Medicos</a> |
     <a href="/admin/pacientes">Pacientes</a> |
-    <a href="/admin/reportes">Reportes</a> |
-    <a href="/logout">Cerrar sesion</a>
+    <a href="/admin/solicitudes-bloqueo">Solicitudes</a> |
+    <a href="/admin/reportes">Reportes</a>
   </nav>
+  <%- include('../partials/perfil-widget') %>
   <div class="contenido">
-    <p>Desde aqui puedes gestionar especialidades, medicos y pacientes, y revisar los reportes de citas.</p>
-    <a href="/admin/reportes" class="boton">Ver reportes de citas</a>
+    <p class="saludo-intro">Desde aqui puedes gestionar especialidades, medicos y pacientes, y revisar los reportes de citas.</p>
+
+    <div class="tarjetas-resumen">
+      <div class="tarjeta">
+        <div class="numero"><%= totalEspecialidades %></div>
+        <div class="etiqueta">Especialidades</div>
+      </div>
+      <div class="tarjeta">
+        <div class="numero"><%= totalMedicos %></div>
+        <div class="etiqueta">Medicos activos</div>
+      </div>
+      <div class="tarjeta">
+        <div class="numero"><%= totalPacientes %></div>
+        <div class="etiqueta">Pacientes activos</div>
+      </div>
+      <div class="tarjeta">
+        <div class="numero"><%= citasHoy %></div>
+        <div class="etiqueta">Citas hoy</div>
+      </div>
+      <div class="tarjeta">
+        <div class="numero"><%= solicitudesPendientes %></div>
+        <div class="etiqueta">Solicitudes pendientes</div>
+      </div>
+    </div>
+
+    <div class="grid-acciones">
+      <a href="/admin/especialidades" class="tarjeta-accion">
+        <div class="icono">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-4z"/>
+            <path d="M9.5 12l1.8 1.8L14.5 10"/>
+          </svg>
+        </div>
+        <div class="titulo">Especialidades</div>
+        <div class="descripcion">Crea y edita el catalogo de especialidades y su duracion de cita.</div>
+        <div class="flecha">Gestionar &rarr;</div>
+      </a>
+
+      <a href="/admin/medicos" class="tarjeta-accion">
+        <div class="icono">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="8" r="3.2"/>
+            <path d="M5 20c0-4 3-6.5 7-6.5s7 2.5 7 6.5"/>
+            <path d="M13.5 5.2c1 .4 1.7 1.4 1.7 2.6s-.7 2.2-1.7 2.6"/>
+          </svg>
+        </div>
+        <div class="titulo">Medicos</div>
+        <div class="descripcion">Registra medicos nuevos y asignales su especialidad.</div>
+        <div class="flecha">Gestionar &rarr;</div>
+      </a>
+
+      <a href="/admin/pacientes" class="tarjeta-accion">
+        <div class="icono">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="9" cy="8" r="3"/>
+            <path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/>
+            <circle cx="17" cy="7" r="2.2"/>
+            <path d="M15.5 12.3c2.3.4 4 2.3 4 4.7"/>
+          </svg>
+        </div>
+        <div class="titulo">Pacientes</div>
+        <div class="descripcion">Consulta los pacientes registrados y bloquea o elimina cuentas.</div>
+        <div class="flecha">Gestionar &rarr;</div>
+      </a>
+
+      <a href="/admin/solicitudes-bloqueo" class="tarjeta-accion<%= solicitudesPendientes > 0 ? ' destacada' : '' %>">
+        <div class="icono">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 3v4M16 3v4M4 9h16M6 5h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2z"/>
+            <path d="M9.5 13.5l5 5M14.5 13.5l-5 5"/>
+          </svg>
+        </div>
+        <div class="titulo">Solicitudes de bloqueo</div>
+        <div class="descripcion">
+          <%= solicitudesPendientes > 0
+              ? solicitudesPendientes + ' solicitud(es) esperando tu aprobacion.'
+              : 'Aprueba o rechaza los dias que los medicos piden bloquear.' %>
+        </div>
+        <div class="flecha">Revisar &rarr;</div>
+      </a>
+
+      <a href="/admin/reportes" class="tarjeta-accion destacada">
+        <div class="icono">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 20V10M11 20V4M18 20v-7"/>
+            <path d="M3 20h18"/>
+          </svg>
+        </div>
+        <div class="titulo">Reportes</div>
+        <div class="descripcion">Mira cuantas citas hay por estado, especialidad y medico.</div>
+        <div class="flecha">Ver reportes &rarr;</div>
+      </a>
+    </div>
   </div>
 </body>
 </html>

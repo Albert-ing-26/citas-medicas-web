@@ -24,8 +24,25 @@ router.use(async (req, res, next) => {
   }
 });
 
-router.get('/', (req, res) => {
-  res.render('paciente/dashboard', { usuario: req.session.usuario });
+router.get('/', async (req, res) => {
+  try {
+    const [[stats]] = await pool.query(`
+      SELECT
+        SUM(estado IN ('pendiente','confirmada') AND fecha >= CURDATE()) AS proximasCitas,
+        SUM(estado = 'atendida') AS citasAtendidas
+      FROM citas
+      WHERE id_paciente = ?
+    `, [req.idPaciente]);
+
+    res.render('paciente/dashboard', {
+      usuario: req.session.usuario,
+      proximasCitas: stats.proximasCitas || 0,
+      citasAtendidas: stats.citasAtendidas || 0
+    });
+  } catch (err) {
+    console.error(err);
+    res.render('paciente/dashboard', { usuario: req.session.usuario, proximasCitas: 0, citasAtendidas: 0 });
+  }
 });
 
 // ------------------- RESERVAR CITA -------------------
@@ -81,7 +98,7 @@ router.get('/reservar', async (req, res) => {
 
           // ¿El medico bloqueo este dia completo?
           const [bloqueado] = await pool.query(
-            'SELECT 1 FROM dias_bloqueados WHERE id_medico = ? AND fecha = ?',
+            "SELECT 1 FROM dias_bloqueados WHERE id_medico = ? AND fecha = ? AND estado = 'aprobado'",
             [id_medico, fecha]
           );
 
@@ -186,7 +203,7 @@ router.post('/reservar', async (req, res) => {
 
     // ¿Dia bloqueado por el medico? (revalidacion por si cambio entre que se mostro el formulario y se envio)
     const [bloqueado] = await pool.query(
-      'SELECT 1 FROM dias_bloqueados WHERE id_medico = ? AND fecha = ?',
+      "SELECT 1 FROM dias_bloqueados WHERE id_medico = ? AND fecha = ? AND estado = 'aprobado'",
       [id_medico, fecha]
     );
     if (bloqueado.length > 0) {

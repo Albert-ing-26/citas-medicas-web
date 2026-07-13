@@ -10,9 +10,9 @@
   <nav>
     <a href="/medico">Inicio</a> |
     <a href="/medico/agenda">Mi agenda</a> |
-    <a href="/medico/dias-bloqueados">Dias bloqueados</a> |
-    <a href="/logout">Cerrar sesion</a>
+    <a href="/medico/dias-bloqueados">Solicitudes de bloqueo</a>
   </nav>
+  <%- include('../partials/perfil-widget') %>
 
   <div class="contenido">
     <h2>Mi agenda</h2>
@@ -28,8 +28,10 @@
       <input type="date" id="fecha" name="fecha" value="<%= fecha %>" onchange="this.form.submit()">
     </form>
 
-    <% if (bloqueado) { %>
+    <% if (bloqueado && bloqueado.estado === 'aprobado') { %>
       <p class="nota">Tienes este dia bloqueado<%= bloqueado.motivo ? ' (' + bloqueado.motivo + ')' : '' %>. No se pueden reservar nuevas citas ese dia.</p>
+    <% } else if (bloqueado && bloqueado.estado === 'pendiente') { %>
+      <p class="nota" style="color:#b45309;">Tienes una solicitud de bloqueo pendiente de aprobacion para este dia. Los pacientes todavia pueden reservar hasta que el administrador la apruebe.</p>
     <% } %>
 
     <table class="tabla">

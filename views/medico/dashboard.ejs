@@ -10,12 +10,56 @@
   <nav>
     <a href="/medico">Inicio</a> |
     <a href="/medico/agenda">Mi agenda</a> |
-    <a href="/medico/dias-bloqueados">Dias bloqueados</a> |
-    <a href="/logout">Cerrar sesion</a>
+    <a href="/medico/dias-bloqueados">Solicitudes de bloqueo</a>
   </nav>
+  <%- include('../partials/perfil-widget') %>
   <div class="contenido">
-    <p>Desde aqui puedes revisar las citas de tus pacientes y bloquear los dias en los que no atenderas.</p>
-    <a href="/medico/agenda" class="boton">Ver mi agenda de hoy</a>
+    <p class="saludo-intro">Desde aqui puedes revisar las citas de tus pacientes y solicitar el bloqueo de los dias en los que no atenderas.</p>
+
+    <div class="tarjetas-resumen">
+      <div class="tarjeta">
+        <div class="numero"><%= citasHoy %></div>
+        <div class="etiqueta">Citas hoy</div>
+      </div>
+      <div class="tarjeta">
+        <div class="numero"><%= citasPendientes %></div>
+        <div class="etiqueta">Por confirmar</div>
+      </div>
+      <div class="tarjeta">
+        <div class="numero"><%= diasBloqueados %></div>
+        <div class="etiqueta">Dias bloqueados</div>
+      </div>
+      <div class="tarjeta">
+        <div class="numero"><%= solicitudesPendientes %></div>
+        <div class="etiqueta">Solicitudes pendientes</div>
+      </div>
+    </div>
+
+    <div class="grid-acciones">
+      <a href="/medico/agenda" class="tarjeta-accion destacada">
+        <div class="icono">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 3v4M16 3v4M4 9h16M6 5h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2z"/>
+            <path d="M9 13l2 2 4-4"/>
+          </svg>
+        </div>
+        <div class="titulo">Ver mi agenda</div>
+        <div class="descripcion">Revisa tus citas del dia, confirmalas, marcalas como atendidas o cancelalas.</div>
+        <div class="flecha">Ver agenda &rarr;</div>
+      </a>
+
+      <a href="/medico/dias-bloqueados" class="tarjeta-accion">
+        <div class="icono">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 3v4M16 3v4M4 9h16M6 5h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2z"/>
+            <path d="M9.5 13.5l5 5M14.5 13.5l-5 5"/>
+          </svg>
+        </div>
+        <div class="titulo">Solicitar bloqueo de dia</div>
+        <div class="descripcion">Pide al administrador que bloquee un dia en el que no atenderas, para que los pacientes no reserven contigo.</div>
+        <div class="flecha">Gestionar &rarr;</div>
+      </a>
+    </div>
   </div>
 </body>
 </html>

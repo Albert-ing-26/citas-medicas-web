@@ -1,200 +1,516 @@
+/* =========================================================
+   Sistema de Citas Medicas - Identidad visual
+   Paleta: clinica calida y humana (teal profundo + coral)
+   Tipografia: Fraunces (display) + Inter (UI) + IBM Plex Mono (datos)
+   Firma: franja de pulso (EKG) animada bajo cada barra de navegacion
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+:root {
+  --bg: #f4f9f8;
+  --surface: #ffffff;
+  --ink: #16242a;
+  --muted: #5e7770;
+  --line: #dbe7e3;
+
+  --primary: #0d7377;
+  --primary-dark: #0a5658;
+  --primary-light: #e5f3f2;
+
+  --accent: #ff6f59;
+  --accent-dark: #e6543f;
+
+  --ok: #1e9e63;
+  --ok-bg: #e7f7ee;
+  --warn: #d98c1f;
+  --warn-bg: #fdf1de;
+  --danger: #e0453f;
+  --danger-bg: #fdeceb;
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+
+  --shadow-sm: 0 1px 2px rgba(15, 45, 45, 0.06), 0 1px 1px rgba(15, 45, 45, 0.04);
+  --shadow-md: 0 8px 24px rgba(13, 42, 43, 0.08), 0 2px 6px rgba(13, 42, 43, 0.05);
+  --shadow-lift: 0 14px 32px rgba(13, 42, 43, 0.14), 0 4px 10px rgba(13, 42, 43, 0.08);
+
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+}
+
 * {
   box-sizing: border-box;
-  font-family: Arial, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   margin: 0;
-  background: #f4f6f8;
-  color: #222;
+  min-height: 100vh;
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--ink);
+  position: relative;
 }
 
-.login-box {
-  max-width: 360px;
-  margin: 80px auto;
-  padding: 30px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.registro-box {
-  max-width: 440px;
-  margin: 40px auto;
-}
-
-.login-box h1 {
-  text-align: center;
-  font-size: 22px;
-  color: #2563eb;
-}
-
-.login-box label {
-  display: block;
-  margin-top: 12px;
-  font-size: 14px;
-}
-
-.login-box input {
-  width: 100%;
-  padding: 8px;
-  margin-top: 4px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.login-box button {
-  width: 100%;
-  margin-top: 20px;
-  padding: 10px;
-  background: #2563eb;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.error {
-  color: #d32f2f;
-  font-size: 14px;
-  text-align: center;
-}
-
-nav {
-  padding: 12px 24px;
-  background: #2563eb;
-}
-
-nav a {
-  color: white;
-  text-decoration: none;
-  margin-right: 12px;
+/* Atmosfera de fondo: dos manchas de luz muy suaves, quietas, que dan calidez
+   sin competir con el contenido. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(560px circle at 8% 0%, rgba(13, 115, 119, 0.07), transparent 60%),
+    radial-gradient(620px circle at 100% 18%, rgba(255, 111, 89, 0.06), transparent 55%);
+  pointer-events: none;
 }
 
 h1 {
-  padding: 0 24px;
+  padding: 22px 28px 0;
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 26px;
+  letter-spacing: -0.01em;
+  color: var(--ink);
 }
 
-.contenido {
-  padding: 24px;
+h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 21px;
+  color: var(--ink);
+  margin: 0 0 16px;
 }
+
+h3 {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 15px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--primary-dark);
+  margin: 28px 0 12px;
+}
+
+/* ---------------------------------------------------------
+   Barra de navegacion + firma visual: franja de pulso (EKG)
+   --------------------------------------------------------- */
+
+nav {
+  display: block;
+  padding: 14px 28px;
+  margin: 14px 28px 0;
+  border-radius: 999px;
+  background: linear-gradient(120deg, var(--primary-dark), var(--primary));
+  color: rgba(255, 255, 255, 0.38); /* atenua los separadores " | " que vienen del HTML */
+  box-shadow: var(--shadow-md);
+  position: relative;
+}
+
+nav a {
+  display: inline-block;
+  color: rgba(255, 255, 255, 0.92);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 14px;
+  padding: 6px 14px;
+  margin-right: 2px;
+  border-radius: 999px;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
+}
+
+nav a:hover {
+  background: rgba(255, 255, 255, 0.16);
+  transform: translateY(-1px);
+}
+
+nav a:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+/* La franja de pulso: un latido dibujado en SVG que se desplaza lentamente
+   bajo la barra de navegacion. Es el elemento que identifica a todo el sitio
+   como un sistema de salud, sin recurrir a un icono de cruz o estetoscopio. */
+nav::after {
+  content: '';
+  display: block;
+  height: 14px;
+  margin-top: 10px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='14' viewBox='0 0 220 14'%3E%3Cpath d='M0 7 H70 L80 1 L92 13 L100 7 H130 L140 2 L150 12 L158 7 H220' fill='none' stroke='%23ff6f59' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-size: 220px 14px;
+  opacity: 0.55;
+  animation: pulso-avance 7s linear infinite;
+}
+
+@keyframes pulso-avance {
+  from { background-position-x: 0; }
+  to   { background-position-x: -220px; }
+}
+
+/* ---------------------------------------------------------
+   Contenedores principales + animacion de entrada
+   --------------------------------------------------------- */
+
+.contenido {
+  padding: 24px 28px 48px;
+  animation: aparecer 0.5s ease both;
+}
+
+.contenido > * {
+  animation: aparecer 0.5s ease both;
+}
+.contenido > *:nth-child(1) { animation-delay: 0.02s; }
+.contenido > *:nth-child(2) { animation-delay: 0.08s; }
+.contenido > *:nth-child(3) { animation-delay: 0.14s; }
+.contenido > *:nth-child(4) { animation-delay: 0.2s; }
+
+@keyframes aparecer {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.contenido > p {
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.6;
+  max-width: 640px;
+}
+
+/* ---------------------------------------------------------
+   Botones
+   --------------------------------------------------------- */
 
 .boton {
   display: inline-block;
   margin-bottom: 16px;
-  padding: 8px 16px;
-  background: #2563eb;
+  padding: 11px 22px;
+  background: linear-gradient(120deg, var(--primary), var(--primary-dark));
   color: white;
   text-decoration: none;
-  border-radius: 4px;
+  border-radius: 999px;
   font-size: 14px;
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease;
 }
 
-.tabla {
+.boton:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lift);
+  background: linear-gradient(120deg, var(--accent), var(--accent-dark));
+}
+
+.boton:focus-visible {
+  outline: 2px solid var(--primary-dark);
+  outline-offset: 2px;
+}
+
+/* ---------------------------------------------------------
+   Tarjetas de login / registro
+   --------------------------------------------------------- */
+
+.login-box {
+  max-width: 360px;
+  margin: 64px auto;
+  padding: 32px;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--line);
+  animation: aparecer 0.5s ease both;
+}
+
+.registro-box {
+  max-width: 460px;
+  margin: 40px auto;
+}
+
+.login-box h1 {
+  padding: 0;
+  text-align: center;
+  font-size: 24px;
+  color: var(--primary-dark);
+  margin-bottom: 4px;
+}
+
+.login-box label {
+  display: block;
+  margin-top: 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.login-box input {
   width: 100%;
-  border-collapse: collapse;
-  background: white;
-}
-
-.tabla th, .tabla td {
-  text-align: left;
   padding: 10px 12px;
-  border-bottom: 1px solid #e5e7eb;
+  margin-top: 5px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
   font-size: 14px;
+  font-family: var(--font-body);
+  background: var(--bg);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.tabla th {
-  background: #f1f5f9;
+.login-box input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-light);
+  background: var(--surface);
 }
 
-.tabla a {
-  color: #2563eb;
-  text-decoration: none;
-  margin-right: 8px;
-}
-
-.link-eliminar {
-  background: none;
+.login-box button {
+  width: 100%;
+  margin-top: 22px;
+  padding: 12px;
+  background: linear-gradient(120deg, var(--primary), var(--primary-dark));
+  color: white;
   border: none;
-  color: #d32f2f;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 600;
   cursor: pointer;
-  font-size: 14px;
-  padding: 0;
-  text-decoration: underline;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.link-accion {
-  background: none;
-  border: none;
-  color: #2563eb;
-  cursor: pointer;
-  font-size: 14px;
-  padding: 0;
-  margin-right: 8px;
-  text-decoration: underline;
+.login-box button:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
 
-.estado-activo {
-  color: #15803d;
-  font-weight: 500;
+.login-box .nota a,
+.registro-box .nota a {
+  color: var(--primary);
+  font-weight: 600;
 }
 
-.estado-bloqueado {
-  color: #d32f2f;
-  font-weight: 500;
+/* ---------------------------------------------------------
+   Mensajes: error y nota
+   --------------------------------------------------------- */
+
+.error {
+  font-size: 13px;
+  text-align: center;
+  color: var(--danger);
+  background: var(--danger-bg);
+  border-left: 3px solid var(--danger);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin: 0 0 12px;
 }
 
 .nota {
   font-size: 13px;
-  color: #666;
-  margin-top: -8px;
+  color: var(--muted);
+  background: var(--primary-light);
+  border-left: 3px solid var(--primary);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin: 0 0 16px;
 }
 
+/* ---------------------------------------------------------
+   Tablas
+   --------------------------------------------------------- */
+
+.tabla {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--line);
+}
+
+.tabla th, .tabla td {
+  text-align: left;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
+}
+
+.tabla th {
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.tabla tbody tr {
+  transition: background 0.15s ease;
+}
+
+.tabla tbody tr:hover {
+  background: #f6faf9;
+}
+
+.tabla tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.tabla td:has(> span[class^="estado-"]),
+.tabla td {
+  font-variant-numeric: tabular-nums;
+}
+
+.tabla a {
+  color: var(--primary);
+  text-decoration: none;
+  margin-right: 8px;
+  font-weight: 500;
+}
+
+.tabla a:hover {
+  text-decoration: underline;
+}
+
+.link-eliminar,
+.link-accion {
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 12px;
+  margin-right: 6px;
+  border-radius: 999px;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.link-accion {
+  background: var(--primary-light);
+  color: var(--primary-dark);
+}
+
+.link-accion:hover {
+  background: var(--primary);
+  color: white;
+  transform: translateY(-1px);
+}
+
+.link-eliminar {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.link-eliminar:hover {
+  background: var(--danger);
+  color: white;
+  transform: translateY(-1px);
+}
+
+/* Estados de citas / cuentas, como pill de color */
+.estado-activo,
+.estado-bloqueado {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
+  text-transform: capitalize;
+}
+
+.estado-activo {
+  color: var(--ok);
+  background: var(--ok-bg);
+}
+
+.estado-bloqueado {
+  color: var(--danger);
+  background: var(--danger-bg);
+}
+
+/* ---------------------------------------------------------
+   Formularios
+   --------------------------------------------------------- */
+
 .formulario {
-  max-width: 400px;
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
+  max-width: 420px;
+  background: var(--surface);
+  padding: 24px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-sm);
 }
 
 .formulario label {
   display: block;
-  margin-top: 12px;
-  font-size: 14px;
+  margin-top: 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
 }
 
-.formulario input {
-  width: 100%;
-  padding: 8px;
-  margin-top: 4px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
+.formulario input,
 .formulario select {
   width: 100%;
-  padding: 8px;
-  margin-top: 4px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background: white;
+  padding: 10px 12px;
+  margin-top: 5px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-family: var(--font-body);
+  background: var(--bg);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.formulario input:focus,
+.formulario select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-light);
+  background: var(--surface);
 }
 
 .formulario button {
-  margin-top: 20px;
-  padding: 10px 20px;
-  background: #2563eb;
+  margin-top: 22px;
+  padding: 11px 22px;
+  background: linear-gradient(120deg, var(--primary), var(--primary-dark));
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease;
+}
+
+.formulario button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lift);
+  background: linear-gradient(120deg, var(--accent), var(--accent-dark));
 }
 
 .formulario .cancelar {
   margin-left: 12px;
-  color: #555;
+  color: var(--muted);
   font-size: 14px;
+  text-decoration: none;
 }
+
+.formulario .cancelar:hover {
+  color: var(--ink);
+  text-decoration: underline;
+}
+
+/* ---------------------------------------------------------
+   Reportes: tarjetas resumen y barra de proporcion
+   --------------------------------------------------------- */
 
 .tarjetas-resumen {
   display: flex;
@@ -204,63 +520,612 @@ h1 {
 }
 
 .tarjeta {
-  background: white;
-  border-radius: 8px;
-  padding: 16px 20px;
-  min-width: 140px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  padding: 18px 22px;
+  min-width: 150px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--primary);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.tarjeta:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
 }
 
 .tarjeta .numero {
-  font-size: 28px;
+  font-family: var(--font-display);
+  font-size: 30px;
   font-weight: 700;
-  color: #2563eb;
+  color: var(--primary-dark);
+  line-height: 1;
 }
 
 .tarjeta .etiqueta {
-  font-size: 13px;
-  color: #555;
-  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+  margin-top: 6px;
 }
 
 .barra-fondo {
-  background: #e5e7eb;
-  border-radius: 6px;
+  background: var(--primary-light);
+  border-radius: 999px;
   height: 10px;
   width: 100%;
   overflow: hidden;
 }
 
 .barra-relleno {
-  background: #2563eb;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
   height: 100%;
+  border-radius: 999px;
+  transition: width 0.6s ease;
 }
 
 .filtro-fechas {
   display: flex;
-  gap: 12px;
+  gap: 14px;
   align-items: flex-end;
   flex-wrap: wrap;
   margin-bottom: 24px;
+  background: var(--surface);
+  padding: 16px 20px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-sm);
 }
 
 .filtro-fechas label {
-  font-size: 13px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
   display: block;
-  margin-bottom: 4px;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 .filtro-fechas input {
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
 }
 
 .filtro-fechas button {
-  padding: 9px 16px;
-  background: #2563eb;
+  padding: 10px 20px;
+  background: linear-gradient(120deg, var(--primary), var(--primary-dark));
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 999px;
+  font-weight: 600;
   cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.filtro-fechas button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lift);
+}
+
+.filtro-fechas .cancelar {
+  color: var(--muted);
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.filtro-fechas .cancelar:hover {
+  color: var(--ink);
+  text-decoration: underline;
+}
+
+/* ---------------------------------------------------------
+   Tarjetas de accion (grid de "que puedes hacer" en el inicio
+   de cada rol, al estilo de un portal de salud real)
+   --------------------------------------------------------- */
+
+.grid-acciones {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin: 8px 0 32px;
+}
+
+.tarjeta-accion {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 22px;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.tarjeta-accion:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lift);
+  border-color: var(--primary);
+}
+
+.tarjeta-accion .icono {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: var(--primary-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary-dark);
+  transition: background 0.18s ease, color 0.18s ease;
+}
+
+.tarjeta-accion:hover .icono {
+  background: var(--primary);
+  color: white;
+}
+
+.tarjeta-accion .icono svg {
+  width: 24px;
+  height: 24px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+}
+
+.tarjeta-accion .titulo {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 17px;
+  color: var(--ink);
+}
+
+.tarjeta-accion .descripcion {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+  flex-grow: 1;
+}
+
+.tarjeta-accion .flecha {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary);
+  transition: transform 0.18s ease;
+}
+
+.tarjeta-accion:hover .flecha {
+  transform: translateX(4px);
+}
+
+.tarjeta-accion.destacada {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  border-color: transparent;
+}
+
+.tarjeta-accion.destacada .titulo,
+.tarjeta-accion.destacada .descripcion {
+  color: white;
+}
+
+.tarjeta-accion.destacada .icono {
+  background: rgba(255, 255, 255, 0.18);
+  color: white;
+}
+
+.tarjeta-accion.destacada .flecha {
+  color: white;
+}
+
+.saludo-intro {
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.6;
+  max-width: 640px;
+  margin: 0 0 20px;
+}
+
+/* ---------------------------------------------------------
+   Pantalla de login dividida: panel de marca + panel de formulario
+   --------------------------------------------------------- */
+
+body.pagina-login {
+  overflow-x: hidden;
+}
+
+.pantalla-dividida {
+  display: flex;
+  min-height: 100vh;
+}
+
+.panel-izquierdo {
+  flex: 1 1 50%;
+  min-width: 0;
+  background: linear-gradient(160deg, var(--primary-dark), var(--primary) 70%);
+  color: white;
+  padding: 44px 48px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.marca {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: -0.01em;
+}
+
+.marca span {
+  color: var(--accent);
+}
+
+.panel-izquierdo-texto {
+  margin-top: 64px;
+  max-width: 460px;
+}
+
+.panel-izquierdo-texto h1 {
+  padding: 0;
+  color: white;
+  font-size: 40px;
+  line-height: 1.15;
+  margin: 0 0 16px;
+}
+
+.panel-izquierdo-texto p {
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 16px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.ilustracion {
+  position: relative;
+  flex-grow: 1;
+  margin-top: 48px;
+  min-height: 220px;
+}
+
+.tarjeta-flotante {
+  position: absolute;
+  background: white;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lift);
+  padding: 18px 20px;
+  animation: flotar 5s ease-in-out infinite;
+}
+
+.tarjeta-flotante-principal {
+  left: 4%;
+  top: 10%;
+  width: 78%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.tf-fila {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tf-punto {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--primary);
+  flex-shrink: 0;
+}
+
+.tf-linea {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--line);
+}
+
+.tf-linea.larga { width: 80%; }
+.tf-linea.media { width: 60%; }
+.tf-linea.corta { width: 40%; }
+
+.tarjeta-flotante-badge {
+  right: 2%;
+  bottom: 6%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  animation-delay: 0.6s;
+}
+
+.tf-check {
+  width: 30px;
+  height: 30px;
+  stroke: var(--ok);
+  fill: none;
+  stroke-width: 1.8;
+  flex-shrink: 0;
+}
+
+.tf-badge-titulo {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.tf-badge-sub {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.cruz {
+  position: absolute;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 22px;
+  font-weight: 300;
+  animation: flotar 6s ease-in-out infinite;
+}
+
+.cruz-1 { top: 2%; right: 18%; }
+.cruz-2 { bottom: 30%; left: 0; animation-delay: 1s; }
+.cruz-3 { top: 44%; right: 4%; animation-delay: 2s; }
+
+@keyframes flotar {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.panel-derecho {
+  flex: 1 1 50%;
+  min-width: 0;
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.panel-derecho .login-box {
+  box-shadow: none;
+  border: none;
+  margin: 0;
+  width: 100%;
+  max-width: 380px;
+  animation: aparecer 0.5s ease both;
+}
+
+.separador-o {
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+  margin: 22px 0 14px;
+  position: relative;
+}
+
+.separador-o::before,
+.separador-o::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 30%;
+  height: 1px;
+  background: var(--line);
+}
+
+.separador-o::before { left: 0; }
+.separador-o::after { right: 0; }
+
+.separador-o span {
+  background: var(--surface);
+  padding: 0 10px;
+}
+
+.boton-registro {
+  display: block;
+  width: 100%;
+  text-align: center;
+  padding: 12px;
+  border: 1.5px solid var(--primary);
+  color: var(--primary-dark);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+
+.boton-registro:hover {
+  background: var(--primary);
+  color: white;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 900px) {
+  .pantalla-dividida { flex-direction: column; }
+  .panel-izquierdo { padding: 32px 24px 40px; }
+  .panel-izquierdo-texto { margin-top: 28px; }
+  .panel-izquierdo-texto h1 { font-size: 30px; }
+  .ilustracion { display: none; }
+  .panel-derecho { padding: 32px 20px; }
+}
+
+/* ---------------------------------------------------------
+   Accesibilidad: respeta si la persona prefiere menos movimiento
+   --------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------------------------------------------------------
+   Responsive
+   --------------------------------------------------------- */
+
+@media (max-width: 640px) {
+  h1 { font-size: 21px; padding: 18px 16px 0; }
+  nav { margin: 10px 16px 0; padding: 12px 16px; }
+  .contenido { padding: 18px 16px 40px; }
+  .login-box, .registro-box { margin: 32px 16px; padding: 24px; }
+  .tabla th, .tabla td { padding: 10px; font-size: 13px; }
+  .tarjetas-resumen { gap: 10px; }
+  .tarjeta { min-width: 120px; padding: 14px 16px; }
+  .grid-acciones { grid-template-columns: 1fr; }
+}
+
+/* ---------------------------------------------------------
+   Panel de perfil: avatar fijo arriba a la derecha en toda la app
+   --------------------------------------------------------- */
+
+.perfil-widget {
+  position: fixed;
+  top: 22px;
+  right: 28px;
+  z-index: 100;
+}
+
+.perfil-avatar {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 17px;
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+  border: 2px solid var(--surface);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  user-select: none;
+}
+
+.perfil-avatar::-webkit-details-marker { display: none; }
+
+.perfil-avatar:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-lift);
+}
+
+.perfil-widget[open] .perfil-avatar {
+  box-shadow: var(--shadow-lift);
+}
+
+.perfil-menu {
+  position: absolute;
+  top: 52px;
+  right: 0;
+  min-width: 210px;
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lift);
+  padding: 14px 16px;
+  animation: perfil-menu-abrir 0.15s ease;
+}
+
+@keyframes perfil-menu-abrir {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.perfil-menu-nombre {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--ink);
+}
+
+.perfil-menu-rol {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.perfil-menu hr {
+  border: none;
+  border-top: 1px solid var(--line);
+  margin: 0 0 10px;
+}
+
+.perfil-menu a {
+  display: block;
+  padding: 8px 4px;
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+}
+
+.perfil-menu a:hover {
+  background: var(--primary-light);
+  color: var(--primary-dark);
+}
+
+@media (max-width: 640px) {
+  .perfil-widget { top: 14px; right: 14px; }
+  .perfil-avatar { width: 36px; height: 36px; font-size: 15px; }
+}
+
+/* ---------------------------------------------------------
+   Pagina "Mi perfil"
+   --------------------------------------------------------- */
+
+.perfil-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.tarjeta-perfil {
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: 22px 24px;
+}
+
+.datos-solo-lectura {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.datos-solo-lectura p {
+  margin: 4px 0;
+}
+
+.exito {
+  background: var(--ok-bg);
+  color: var(--ok);
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 780px) {
+  .perfil-grid { grid-template-columns: 1fr; }
 }

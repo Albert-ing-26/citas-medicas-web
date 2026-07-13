@@ -10,12 +10,48 @@
   <nav>
     <a href="/paciente">Inicio</a> |
     <a href="/paciente/reservar">Reservar cita</a> |
-    <a href="/paciente/mis-citas">Mis citas</a> |
-    <a href="/logout">Cerrar sesion</a>
+    <a href="/paciente/mis-citas">Mis citas</a>
   </nav>
+  <%- include('../partials/perfil-widget') %>
   <div class="contenido">
-    <p>Desde aqui puedes reservar una nueva cita con el medico que necesites, o revisar el estado de tus citas.</p>
-    <a href="/paciente/reservar" class="boton">Reservar una cita</a>
+    <p class="saludo-intro">Desde aqui puedes reservar una nueva cita con el medico que necesites, o revisar el estado de tus citas.</p>
+
+    <div class="tarjetas-resumen">
+      <div class="tarjeta">
+        <div class="numero"><%= proximasCitas %></div>
+        <div class="etiqueta">Citas proximas</div>
+      </div>
+      <div class="tarjeta">
+        <div class="numero"><%= citasAtendidas %></div>
+        <div class="etiqueta">Citas atendidas</div>
+      </div>
+    </div>
+
+    <div class="grid-acciones">
+      <a href="/paciente/reservar" class="tarjeta-accion destacada">
+        <div class="icono">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <rect x="3" y="5" width="18" height="16" rx="2"/>
+            <path d="M3 9h18M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/>
+          </svg>
+        </div>
+        <div class="titulo">Reservar una cita</div>
+        <div class="descripcion">Elige especialidad, medico, fecha y horario disponible en unos segundos.</div>
+        <div class="flecha">Reservar &rarr;</div>
+      </a>
+
+      <a href="/paciente/mis-citas" class="tarjeta-accion">
+        <div class="icono">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 3v4M16 3v4M4 9h16M6 5h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2z"/>
+            <path d="M8 13h3M8 17h6"/>
+          </svg>
+        </div>
+        <div class="titulo">Ver mis citas</div>
+        <div class="descripcion">Revisa el estado de tus citas reservadas y cancela si ya no las necesitas.</div>
+        <div class="flecha">Ver citas &rarr;</div>
+      </a>
+    </div>
   </div>
 </body>
 </html>

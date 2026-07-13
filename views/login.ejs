@@ -5,24 +5,72 @@
   <title>Iniciar sesion - Citas Medicas</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
-<body>
-  <div class="login-box">
-    <h1>Citas Medicas</h1>
-    <% if (error) { %>
-      <p class="error"><%= error %></p>
-    <% } %>
-    <form action="/login" method="POST">
-      <label for="correo">Correo</label>
-      <input type="email" name="correo" id="correo" required>
+<body class="pagina-login">
+  <div class="pantalla-dividida">
 
-      <label for="password">Contrasena</label>
-      <input type="password" name="password" id="password" required>
+    <div class="panel-izquierdo">
+      <div class="marca">Citas<span>Medicas</span></div>
 
-      <button type="submit">Ingresar</button>
-    </form>
-    <p class="nota" style="text-align:center; margin-top:16px;">
-      ¿Eres paciente y no tienes cuenta? <a href="/registro">Registrate aqui</a>
-    </p>
+      <div class="panel-izquierdo-texto">
+        <h1>Tu salud,<br>un turno mas cerca</h1>
+        <p>Reserva citas con tu medico, revisa el estado de tus consultas y gestiona tu atencion desde un solo lugar.</p>
+      </div>
+
+      <div class="ilustracion">
+        <div class="tarjeta-flotante tarjeta-flotante-principal">
+          <div class="tf-fila">
+            <div class="tf-punto"></div>
+            <div class="tf-linea larga"></div>
+          </div>
+          <div class="tf-fila">
+            <div class="tf-punto"></div>
+            <div class="tf-linea media"></div>
+          </div>
+          <div class="tf-fila">
+            <div class="tf-punto"></div>
+            <div class="tf-linea corta"></div>
+          </div>
+        </div>
+
+        <div class="tarjeta-flotante tarjeta-flotante-badge">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="tf-check">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M8 12.5l2.5 2.5L16 9"/>
+          </svg>
+          <div>
+            <div class="tf-badge-titulo">Cita confirmada</div>
+            <div class="tf-badge-sub">Hoy, 10:00 am</div>
+          </div>
+        </div>
+
+        <span class="cruz cruz-1">+</span>
+        <span class="cruz cruz-2">+</span>
+        <span class="cruz cruz-3">+</span>
+      </div>
+    </div>
+
+    <div class="panel-derecho">
+      <div class="login-box">
+        <h1>Inicia sesion</h1>
+        <% if (error) { %>
+          <p class="error"><%= error %></p>
+        <% } %>
+        <form action="/login" method="POST">
+          <label for="correo">Correo electronico</label>
+          <input type="email" name="correo" id="correo" required>
+
+          <label for="password">Contrasena</label>
+          <input type="password" name="password" id="password" required>
+
+          <button type="submit">Ingresar</button>
+        </form>
+
+        <p class="separador-o"><span>si eres paciente nuevo</span></p>
+
+        <a href="/registro" class="boton-registro">Registrate para reservar tus citas</a>
+      </div>
+    </div>
+
   </div>
 </body>
 </html>

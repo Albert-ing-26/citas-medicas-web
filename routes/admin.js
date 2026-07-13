@@ -6,8 +6,41 @@ const { requireRole } = require('../middlewares/auth');
 
 router.use(requireRole('admin'));
 
-router.get('/', (req, res) => {
-  res.render('admin/dashboard', { usuario: req.session.usuario });
+router.get('/', async (req, res) => {
+  try {
+    const [[especialidades]] = await pool.query('SELECT COUNT(*) AS total FROM especialidades');
+    const [[medicos]] = await pool.query(`
+      SELECT COUNT(*) AS total FROM medicos m
+      JOIN usuarios u ON u.id_usuario = m.id_usuario
+      WHERE u.activo = TRUE
+    `);
+    const [[pacientes]] = await pool.query(`
+      SELECT COUNT(*) AS total FROM pacientes p
+      JOIN usuarios u ON u.id_usuario = p.id_usuario
+      WHERE u.activo = TRUE
+    `);
+    const [[citasHoy]] = await pool.query(
+      `SELECT COUNT(*) AS total FROM citas WHERE fecha = CURDATE() AND estado != 'cancelada'`
+    );
+    const [[solicitudes]] = await pool.query(
+      `SELECT COUNT(*) AS total FROM dias_bloqueados WHERE estado = 'pendiente'`
+    );
+
+    res.render('admin/dashboard', {
+      usuario: req.session.usuario,
+      totalEspecialidades: especialidades.total,
+      totalMedicos: medicos.total,
+      totalPacientes: pacientes.total,
+      citasHoy: citasHoy.total,
+      solicitudesPendientes: solicitudes.total
+    });
+  } catch (err) {
+    console.error(err);
+    res.render('admin/dashboard', {
+      usuario: req.session.usuario,
+      totalEspecialidades: 0, totalMedicos: 0, totalPacientes: 0, citasHoy: 0, solicitudesPendientes: 0
+    });
+  }
 });
 
 // ------------------- ESPECIALIDADES -------------------
@@ -432,6 +465,57 @@ router.get('/reportes', async (req, res) => {
     console.error(err);
     res.status(500).send('Error al generar los reportes');
   }
+});
+
+// ------------------- SOLICITUDES DE BLOQUEO -------------------
+
+router.get('/solicitudes-bloqueo', async (req, res) => {
+  try {
+    const [solicitudes] = await pool.query(`
+      SELECT b.id_bloqueo, b.fecha, b.motivo, b.estado,
+             u.nombre, u.apellidos, e.nombre AS especialidad,
+             (SELECT COUNT(*) FROM citas c
+              WHERE c.id_medico = b.id_medico AND c.fecha = b.fecha
+                AND c.estado IN ('pendiente','confirmada')) AS citas_afectadas
+      FROM dias_bloqueados b
+      JOIN medicos m ON m.id_medico = b.id_medico
+      JOIN usuarios u ON u.id_usuario = m.id_usuario
+      JOIN especialidades e ON e.id_especialidad = m.id_especialidad
+      ORDER BY (b.estado = 'pendiente') DESC, b.fecha
+    `);
+    res.render('admin/solicitudes-bloqueo', {
+      usuario: req.session.usuario,
+      solicitudes,
+      error: null
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error al cargar las solicitudes de bloqueo');
+  }
+});
+
+router.post('/solicitudes-bloqueo/:id/aprobar', async (req, res) => {
+  try {
+    await pool.query(
+      "UPDATE dias_bloqueados SET estado = 'aprobado' WHERE id_bloqueo = ? AND estado = 'pendiente'",
+      [req.params.id]
+    );
+  } catch (err) {
+    console.error(err);
+  }
+  res.redirect('/admin/solicitudes-bloqueo');
+});
+
+router.post('/solicitudes-bloqueo/:id/rechazar', async (req, res) => {
+  try {
+    await pool.query(
+      "UPDATE dias_bloqueados SET estado = 'rechazado' WHERE id_bloqueo = ? AND estado = 'pendiente'",
+      [req.params.id]
+    );
+  } catch (err) {
+    console.error(err);
+  }
+  res.redirect('/admin/solicitudes-bloqueo');
 });
 
 module.exports = router;

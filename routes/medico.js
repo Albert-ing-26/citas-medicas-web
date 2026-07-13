@@ -23,8 +23,35 @@ router.use(async (req, res, next) => {
   }
 });
 
-router.get('/', (req, res) => {
-  res.render('medico/dashboard', { usuario: req.session.usuario });
+router.get('/', async (req, res) => {
+  try {
+    const [[stats]] = await pool.query(`
+      SELECT
+        SUM(fecha = CURDATE() AND estado != 'cancelada') AS citasHoy,
+        SUM(estado = 'pendiente') AS citasPendientes
+      FROM citas
+      WHERE id_medico = ?
+    `, [req.idMedico]);
+
+    const [[bloqueos]] = await pool.query(
+      `SELECT
+         SUM(estado = 'aprobado' AND fecha >= CURDATE()) AS aprobados,
+         SUM(estado = 'pendiente') AS pendientes
+       FROM dias_bloqueados WHERE id_medico = ?`,
+      [req.idMedico]
+    );
+
+    res.render('medico/dashboard', {
+      usuario: req.session.usuario,
+      citasHoy: stats.citasHoy || 0,
+      citasPendientes: stats.citasPendientes || 0,
+      diasBloqueados: bloqueos.aprobados || 0,
+      solicitudesPendientes: bloqueos.pendientes || 0
+    });
+  } catch (err) {
+    console.error(err);
+    res.render('medico/dashboard', { usuario: req.session.usuario, citasHoy: 0, citasPendientes: 0, diasBloqueados: 0, solicitudesPendientes: 0 });
+  }
 });
 
 // Devuelve la fecha de hoy en formato YYYY-MM-DD (hora local del servidor)
@@ -65,7 +92,7 @@ router.get('/agenda', async (req, res) => {
     `, [req.idMedico, fecha]);
 
     const [bloqueado] = await pool.query(
-      'SELECT motivo FROM dias_bloqueados WHERE id_medico = ? AND fecha = ?',
+      "SELECT motivo, estado FROM dias_bloqueados WHERE id_medico = ? AND fecha = ? AND estado != 'rechazado'",
       [req.idMedico, fecha]
     );
 
@@ -110,8 +137,8 @@ router.post('/agenda/:id/cancelar', crearCambioEstado(['pendiente', 'confirmada'
 router.get('/dias-bloqueados', async (req, res) => {
   try {
     const [bloqueos] = await pool.query(
-      `SELECT id_bloqueo, fecha, motivo FROM dias_bloqueados
-       WHERE id_medico = ? ORDER BY fecha`,
+      `SELECT id_bloqueo, fecha, motivo, estado FROM dias_bloqueados
+       WHERE id_medico = ? ORDER BY (estado = 'pendiente') DESC, fecha`,
       [req.idMedico]
     );
     res.render('medico/dias-bloqueados', {
@@ -123,7 +150,7 @@ router.get('/dias-bloqueados', async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    res.status(500).send('Error al cargar los dias bloqueados');
+    res.status(500).send('Error al cargar las solicitudes de bloqueo');
   }
 });
 
@@ -132,8 +159,8 @@ router.post('/dias-bloqueados/nuevo', async (req, res) => {
 
   const volverConMensaje = async (error, aviso) => {
     const [bloqueos] = await pool.query(
-      `SELECT id_bloqueo, fecha, motivo FROM dias_bloqueados
-       WHERE id_medico = ? ORDER BY fecha`,
+      `SELECT id_bloqueo, fecha, motivo, estado FROM dias_bloqueados
+       WHERE id_medico = ? ORDER BY (estado = 'pendiente') DESC, fecha`,
       [req.idMedico]
     );
     res.render('medico/dias-bloqueados', {
@@ -149,16 +176,17 @@ router.post('/dias-bloqueados/nuevo', async (req, res) => {
     return volverConMensaje('Selecciona una fecha', null);
   }
   if (fecha < hoyISO()) {
-    return volverConMensaje('No puedes bloquear una fecha pasada', null);
+    return volverConMensaje('No puedes solicitar el bloqueo de una fecha pasada', null);
   }
 
   try {
     await pool.query(
-      'INSERT INTO dias_bloqueados (id_medico, fecha, motivo) VALUES (?, ?, ?)',
+      "INSERT INTO dias_bloqueados (id_medico, fecha, motivo, estado) VALUES (?, ?, ?, 'pendiente')",
       [req.idMedico, fecha, motivo || null]
     );
 
-    // Si ya habia citas ese dia, avisamos para que el medico las revise (no se cancelan solas)
+    // Si ya habia citas ese dia, avisamos para que el medico las revise (no se cancelan solas
+    // ni siquiera cuando el admin apruebe la solicitud)
     const [citasExistentes] = await pool.query(
       `SELECT COUNT(*) AS total FROM citas
        WHERE id_medico = ? AND fecha = ? AND estado IN ('pendiente', 'confirmada')`,
@@ -168,17 +196,17 @@ router.post('/dias-bloqueados/nuevo', async (req, res) => {
     if (citasExistentes[0].total > 0) {
       return volverConMensaje(
         null,
-        `Dia bloqueado. Ojo: ya tenias ${citasExistentes[0].total} cita(s) agendada(s) ese dia, ` +
+        `Solicitud enviada al administrador. Ojo: ya tenias ${citasExistentes[0].total} cita(s) agendada(s) ese dia, ` +
         `revisalas en tu agenda porque no se cancelan automaticamente.`
       );
     }
 
-    res.redirect('/medico/dias-bloqueados');
+    return volverConMensaje(null, 'Solicitud enviada. Quedara bloqueado el dia una vez que el administrador la apruebe.');
   } catch (err) {
     console.error(err);
     const mensaje = err.code === 'ER_DUP_ENTRY'
-      ? 'Ya tienes bloqueada esa fecha'
-      : 'Error al bloquear la fecha';
+      ? 'Ya tienes una solicitud o un bloqueo para esa fecha'
+      : 'Error al enviar la solicitud';
     volverConMensaje(mensaje, null);
   }
 });

@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Dias bloqueados</title>
+  <title>Solicitudes de bloqueo</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -10,13 +10,13 @@
   <nav>
     <a href="/medico">Inicio</a> |
     <a href="/medico/agenda">Mi agenda</a> |
-    <a href="/medico/dias-bloqueados">Dias bloqueados</a> |
-    <a href="/logout">Cerrar sesion</a>
+    <a href="/medico/dias-bloqueados">Solicitudes de bloqueo</a>
   </nav>
+  <%- include('../partials/perfil-widget') %>
 
   <div class="contenido">
-    <h2>Dias bloqueados</h2>
-    <p class="nota">Los pacientes no podran reservar citas contigo en estos dias. Si ya tenias citas agendadas antes de bloquear un dia, esas citas NO se cancelan automaticamente: revisalas tu mismo en tu agenda.</p>
+    <h2>Solicitar bloqueo de dia</h2>
+    <p class="nota">Al solicitar un dia, tu solicitud queda pendiente hasta que el administrador la apruebe. Los pacientes solo dejan de poder reservar contigo ese dia una vez aprobada. Si ya tenias citas agendadas antes de que se apruebe, esas citas NO se cancelan automaticamente: revisalas tu mismo en tu agenda.</p>
 
     <% if (error) { %>
       <p class="error"><%= error %></p>
@@ -26,13 +26,13 @@
     <% } %>
 
     <form class="formulario" method="POST" action="/medico/dias-bloqueados/nuevo">
-      <label for="fecha">Fecha a bloquear</label>
+      <label for="fecha">Fecha a solicitar</label>
       <input type="date" id="fecha" name="fecha" required min="<%= hoy %>">
 
       <label for="motivo">Motivo (opcional)</label>
       <input type="text" id="motivo" name="motivo" placeholder="Ej: vacaciones, capacitacion">
 
-      <button type="submit">Bloquear dia</button>
+      <button type="submit">Solicitar bloqueo</button>
     </form>
 
     <table class="tabla" style="margin-top:24px;">
@@ -40,6 +40,7 @@
         <tr>
           <th>Fecha</th>
           <th>Motivo</th>
+          <th>Estado</th>
           <th>Acciones</th>
         </tr>
       </thead>
@@ -49,15 +50,26 @@
             <td><%= b.fecha.toISOString ? b.fecha.toISOString().substring(0,10) : b.fecha %></td>
             <td><%= b.motivo || '-' %></td>
             <td>
+              <% if (b.estado === 'aprobado') { %>
+                <span class="estado-activo">Aprobado</span>
+              <% } else if (b.estado === 'pendiente') { %>
+                <span style="color:#b45309;font-weight:500;">Pendiente</span>
+              <% } else { %>
+                <span class="estado-bloqueado">Rechazado</span>
+              <% } %>
+            </td>
+            <td>
               <form action="/medico/dias-bloqueados/<%= b.id_bloqueo %>/eliminar" method="POST"
-                    onsubmit="return confirm('Desbloquear este dia?');">
-                <button type="submit" class="link-eliminar">Desbloquear</button>
+                    onsubmit="return confirm('<%= b.estado === 'pendiente' ? 'Retirar esta solicitud?' : 'Desbloquear este dia?' %>');">
+                <button type="submit" class="link-eliminar">
+                  <%= b.estado === 'pendiente' ? 'Retirar solicitud' : 'Desbloquear' %>
+                </button>
               </form>
             </td>
           </tr>
         <% }) %>
         <% if (bloqueos.length === 0) { %>
-          <tr><td colspan="3">No tienes ningun dia bloqueado.</td></tr>
+          <tr><td colspan="4">No tienes ninguna solicitud de bloqueo.</td></tr>
         <% } %>
       </tbody>
     </table>
