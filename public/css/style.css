@@ -1209,6 +1209,297 @@ body.pagina-login {
 }
 
 /* ---------------------------------------------------------
+   Chatbot flotante Jax — Doctor guía
+   --------------------------------------------------------- */
+
+.chatbot-shell {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 140;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.jax-welcome-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 220;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(11, 24, 24, 0.68);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  opacity: 1;
+  transition: opacity 0.4s ease;
+}
+
+.jax-welcome-overlay.is-hidden {
+  opacity: 0;
+}
+
+.jax-welcome-card {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  background: rgba(255, 255, 255, 0.97);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 28px;
+  padding: 24px 28px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
+  max-width: 760px;
+  width: 100%;
+}
+
+.jax-welcome-portrait {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 240px;
+  height: 240px;
+  border-radius: 28px;
+  background: linear-gradient(135deg, #f2fbfa 0%, #def3eb 100%);
+  box-shadow: inset 0 2px 10px rgba(255,255,255,0.8);
+}
+
+.jax-doctor-svg {
+  width: 180px;
+  height: 180px;
+}
+
+.jax-doctor-svg-small {
+  width: 92px;
+  height: 92px;
+}
+
+.jax-thought-bubble {
+  position: relative;
+  background: linear-gradient(135deg, #ffffff 0%, #f5fffc 100%);
+  border: 1px solid #dcefe9;
+  border-radius: 24px;
+  padding: 18px 22px;
+  box-shadow: 0 12px 28px rgba(15, 118, 110, 0.12);
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+}
+
+.jax-thought-bubble::before {
+  content: '';
+  position: absolute;
+  left: -12px;
+  top: 40px;
+  width: 20px;
+  height: 20px;
+  background: inherit;
+  border-left: 1px solid #dcefe9;
+  border-bottom: 1px solid #dcefe9;
+  transform: rotate(45deg);
+}
+
+.jax-thought-bubble p {
+  margin: 0;
+  color: var(--ink);
+  font-size: 17px;
+  line-height: 1.55;
+  font-weight: 600;
+}
+
+.jax-floating-button {
+  width: 96px;
+  height: 96px;
+  border: none;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #f9fffe 0%, #e7f7f3 100%);
+  box-shadow: 0 16px 36px rgba(15, 118, 110, 0.23);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, opacity 0.25s ease;
+  opacity: 0;
+  transform: scale(0.88);
+  pointer-events: none;
+}
+
+.jax-floating-button.is-visible {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+
+.jax-floating-button:hover {
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 20px 42px rgba(15, 118, 110, 0.28);
+}
+
+.jax-floating-button.is-active {
+  box-shadow: 0 18px 40px rgba(8, 86, 82, 0.27);
+}
+
+.chatbox-window {
+  width: min(320px, calc(100vw - 32px));
+  max-height: min(420px, 72vh);
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, #f7fffd 0%, #eef8f5 100%);
+  border: 1px solid #cce3df;
+  border-radius: 20px;
+  box-shadow: 0 18px 38px rgba(8, 61, 60, 0.16);
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(10px) scale(0.96);
+  transition: all 0.28s ease;
+}
+
+.chatbox-window.is-open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
+
+.chatbox-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  background: linear-gradient(120deg, #0f766e, #157a6b);
+  color: white;
+}
+
+.chatbox-header strong {
+  display: block;
+  font-size: 14px;
+}
+
+.chatbox-header span {
+  display: block;
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+.chatbox-close {
+  border: none;
+  background: rgba(255,255,255,0.16);
+  color: white;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+}
+
+.chatbox-messages {
+  flex: 1;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  background: linear-gradient(180deg, rgba(233, 247, 242, 0.85), rgba(255,255,255,0.95));
+}
+
+.chat-bubble {
+  max-width: 88%;
+  padding: 10px 12px;
+  border-radius: 14px;
+  font-size: 13px;
+  line-height: 1.45;
+  box-shadow: 0 8px 16px rgba(13, 43, 43, 0.08);
+}
+
+.chat-bubble-bot {
+  align-self: flex-start;
+  background: #ffffff;
+  color: var(--ink);
+}
+
+.chat-bubble-user {
+  align-self: flex-end;
+  background: linear-gradient(120deg, #0f766e, #147e73);
+  color: white;
+}
+
+.chatbox-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 12px 8px;
+}
+
+.chat-action {
+  border: 1px solid #dcefe9;
+  background: #ffffff;
+  color: #0f766e;
+  padding: 8px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.chat-action:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 16px rgba(15, 118, 110, 0.12);
+}
+
+.chatbox-form {
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px 12px;
+  border-top: 1px solid #dcefe9;
+  background: #ffffff;
+}
+
+.chatbox-form input {
+  flex: 1;
+  border: 1px solid #dcefe9;
+  border-radius: 999px;
+  padding: 9px 12px;
+  font-size: 13px;
+  outline: none;
+}
+
+.chatbox-form button {
+  border: none;
+  background: linear-gradient(120deg, #0f766e, #147e73);
+  color: white;
+  border-radius: 999px;
+  padding: 9px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media (max-width: 760px) {
+  .jax-welcome-card {
+    flex-direction: column;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .jax-thought-bubble::before {
+    left: 50%;
+    top: -12px;
+    transform: translateX(-50%) rotate(135deg);
+  }
+}
+
+@media (max-width: 640px) {
+  .chatbot-shell { right: 16px; bottom: 16px; }
+  .chatbox-window { width: min(300px, calc(100vw - 24px)); }
+  .jax-welcome-card { padding: 18px; }
+  .jax-welcome-portrait { width: 180px; height: 180px; }
+  .jax-doctor-svg { width: 140px; height: 140px; }
+  .jax-floating-button { width: 74px; height: 74px; }
+  .jax-doctor-svg-small { width: 70px; height: 70px; }
+}
+
+/* ---------------------------------------------------------
    Panel de perfil: avatar fijo arriba a la derecha en toda la app
    --------------------------------------------------------- */
 

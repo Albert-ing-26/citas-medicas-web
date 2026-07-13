@@ -1,0 +1,279 @@
+<div class="chatbot-shell" id="chatbot-shell">
+  <div id="jax-welcome-overlay" class="jax-welcome-overlay" aria-live="polite">
+    <div class="jax-welcome-card" onclick="event.stopPropagation();">
+      <div class="jax-welcome-portrait" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" class="doctor-jax-svg" style="width: 100%; height: 100%; max-width: 140px; display: block; margin: 0 auto;">
+          <circle cx="100" cy="100" r="95" fill="#f0fdfa" stroke="#0d6b6b" stroke-width="3" />
+          <path d="M85 110 L115 110 L110 130 L90 130 Z" fill="#e0a890" />
+          <path d="M75 130 L125 130 L135 185 L65 185 Z" fill="#20b2aa" />
+          <path d="M100 130 L85 155 L115 155 Z" fill="#117a7a" />
+          <path d="M96 150 L104 150 L107 175 L100 185 L93 175 Z" fill="#0d3c3c" />
+          <path d="M60 185 L140 185 L145 200 L55 200 Z" fill="#ffffff" />
+          <path d="M70 130 L100 170 L100 185 L55 185 L65 145 Z" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" />
+          <path d="M130 130 L100 170 L100 185 L145 185 L135 145 Z" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" />
+          <path d="M70 130 L82 155 L75 155 Z" fill="#f8fafc" />
+          <path d="M130 130 L118 155 L125 155 Z" fill="#f8fafc" />
+          <path d="M78 120 C 78 145, 122 145, 122 120" fill="none" stroke="#1e293b" stroke-width="5" stroke-linecap="round" />
+          <path d="M115 142 L115 160" fill="none" stroke="#1e293b" stroke-width="4" />
+          <circle cx="115" cy="163" r="8" fill="#94a3b8" stroke="#1e293b" stroke-width="3" />
+          <circle cx="115" cy="163" r="3" fill="#edf2f7" />
+          <path d="M75 75 C75 50, 125 50, 125 75 C125 105, 75 105, 75 75 Z" fill="#ffd5c3" />
+          <circle cx="72" cy="78" r="7" fill="#ffd5c3" />
+          <circle cx="128" cy="78" r="7" fill="#ffd5c3" />
+          <circle cx="90" cy="74" r="4" fill="#1e293b" />
+          <circle cx="110" cy="74" r="4" fill="#1e293b" />
+          <circle cx="91" cy="72" r="1.5" fill="#ffffff" />
+          <circle cx="111" cy="72" r="1.5" fill="#ffffff" />
+          <path d="M83 67 C86 65, 94 65, 97 67" fill="none" stroke="#1e293b" stroke-width="2" stroke-linecap="round" />
+          <path d="M103 67 C106 65, 114 65, 117 67" fill="none" stroke="#1e293b" stroke-width="2" stroke-linecap="round" />
+          <path d="M98 76 Q100 81 102 76" fill="none" stroke="#e0a890" stroke-width="2" stroke-linecap="round" />
+          <path d="M88 84 Q100 96 112 84" fill="none" stroke="#e07a5f" stroke-width="3.5" stroke-linecap="round" />
+          <path d="M73 72 C71 58, 80 44, 100 44 C120 44, 129 58, 127 72 C124 67, 120 62, 115 62 C105 62, 103 52, 95 52 C85 52, 80 64, 73 72 Z" fill="#1e293b" />
+          <circle cx="90" cy="74" r="12" fill="none" stroke="#0f172a" stroke-width="2.5" />
+          <circle cx="110" cy="74" r="12" fill="none" stroke="#0f172a" stroke-width="2.5" />
+          <path d="M102 74 L98 74" fill="none" stroke="#0f172a" stroke-width="2.5" />
+        </svg>
+      </div>
+      <div class="jax-thought-bubble">
+        <p id="jax-overlay-message">¡Hola! Estoy aquí para ayudarte a moverte por la clínica con tranquilidad.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="chatbox-window" id="chatbox-window" aria-live="polite">
+    <div class="chatbox-header">
+      <div>
+        <strong>Jax</strong>
+        <span>Doctor guía</span>
+      </div>
+      <button class="chatbox-close" type="button" onclick="event.stopPropagation(); closeChat();">×</button>
+    </div>
+
+    <div class="chatbox-messages" id="chatbox-messages"></div>
+
+    <div class="chatbox-actions" id="chatbox-actions"></div>
+
+    <form class="chatbox-form" onsubmit="event.preventDefault(); sendUserMessage();">
+      <input id="chatbox-input" type="text" autocomplete="off" placeholder="Escribe tu duda aquí..." />
+      <button type="submit">Enviar</button>
+    </form>
+  </div>
+
+  <button class="jax-floating-button" id="jax-floating-button" type="button" onclick="toggleChat();" aria-label="Abrir asistente virtual">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" class="doctor-jax-svg jax-doctor-svg-small" role="img" aria-hidden="true">
+      <circle cx="100" cy="100" r="95" fill="#f0fdfa" stroke="#0d6b6b" stroke-width="3" />
+      <path d="M85 110 L115 110 L110 130 L90 130 Z" fill="#e0a890" />
+      <path d="M75 130 L125 130 L135 185 L65 185 Z" fill="#20b2aa" />
+      <path d="M100 130 L85 155 L115 155 Z" fill="#117a7a" />
+      <path d="M96 150 L104 150 L107 175 L100 185 L93 175 Z" fill="#0d3c3c" />
+      <path d="M60 185 L140 185 L145 200 L55 200 Z" fill="#ffffff" />
+      <path d="M70 130 L100 170 L100 185 L55 185 L65 145 Z" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" />
+      <path d="M130 130 L100 170 L100 185 L145 185 L135 145 Z" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" />
+      <path d="M70 130 L82 155 L75 155 Z" fill="#f8fafc" />
+      <path d="M130 130 L118 155 L125 155 Z" fill="#f8fafc" />
+      <path d="M78 120 C 78 145, 122 145, 122 120" fill="none" stroke="#1e293b" stroke-width="5" stroke-linecap="round" />
+      <path d="M115 142 L115 160" fill="none" stroke="#1e293b" stroke-width="4" />
+      <circle cx="115" cy="163" r="8" fill="#94a3b8" stroke="#1e293b" stroke-width="3" />
+      <circle cx="115" cy="163" r="3" fill="#edf2f7" />
+      <path d="M75 75 C75 50, 125 50, 125 75 C125 105, 75 105, 75 75 Z" fill="#ffd5c3" />
+      <circle cx="72" cy="78" r="7" fill="#ffd5c3" />
+      <circle cx="128" cy="78" r="7" fill="#ffd5c3" />
+      <circle cx="90" cy="74" r="4" fill="#1e293b" />
+      <circle cx="110" cy="74" r="4" fill="#1e293b" />
+      <circle cx="91" cy="72" r="1.5" fill="#ffffff" />
+      <circle cx="111" cy="72" r="1.5" fill="#ffffff" />
+      <path d="M83 67 C86 65, 94 65, 97 67" fill="none" stroke="#1e293b" stroke-width="2" stroke-linecap="round" />
+      <path d="M103 67 C106 65, 114 65, 117 67" fill="none" stroke="#1e293b" stroke-width="2" stroke-linecap="round" />
+      <path d="M98 76 Q100 81 102 76" fill="none" stroke="#e0a890" stroke-width="2" stroke-linecap="round" />
+      <path d="M88 84 Q100 96 112 84" fill="none" stroke="#e07a5f" stroke-width="3.5" stroke-linecap="round" />
+      <path d="M73 72 C71 58, 80 44, 100 44 C120 44, 129 58, 127 72 C124 67, 120 62, 115 62 C105 62, 103 52, 95 52 C85 52, 80 64, 73 72 Z" fill="#1e293b" />
+      <circle cx="90" cy="74" r="12" fill="none" stroke="#0f172a" stroke-width="2.5" />
+      <circle cx="110" cy="74" r="12" fill="none" stroke="#0f172a" stroke-width="2.5" />
+      <path d="M102 74 L98 74" fill="none" stroke="#0f172a" stroke-width="2.5" />
+    </svg>
+  </button>
+</div>
+
+<script>
+(function () {
+  if (window.__jaxChatbotInitialized) return;
+  window.__jaxChatbotInitialized = true;
+
+  const contextMap = {
+    login: {
+      welcome: '¡Hola, soy Jax! Ingresa tus credenciales aquí para acceder de forma segura a tu cuenta médica.',
+      quickActions: ['Ingresar', 'Registrarme', 'Ayuda rápida']
+    },
+    paciente: {
+      welcome: '¡Hola! Bienvenido a tu portal. Aquí puedes agendar tus citas o revisar las que ya tienes programadas.',
+      quickActions: ['Reservar cita', 'Ver historial', 'Cancelar cita']
+    },
+    medico: {
+      welcome: '¡Hola! Estoy aquí para ayudarte a revisar tu agenda y administrar tus turnos.',
+      quickActions: ['Ver agenda', 'Bloquear días', 'Confirmar citas']
+    },
+    admin: {
+      welcome: '¡Hola! En este panel puedes ver el resumen gráfico del estado de las citas, médicos y reportes de hoy.',
+      quickActions: ['Gestionar médicos', 'Ver solicitudes', 'Reportes']
+    }
+  };
+
+  function getContext() {
+    const path = window.location.pathname || '/';
+    if (path === '/' || path === '/login' || path === '/registro') return contextMap.login;
+    if (path.startsWith('/paciente/dashboard')) return { ...contextMap.paciente, welcome: '¡Hola! Bienvenido a tu portal. Aquí puedes agendar tus citas o revisar las que ya tienes programadas.' };
+    if (path.startsWith('/paciente/reservar')) return { ...contextMap.paciente, welcome: '¡Hola! Selecciona la especialidad que necesitas, elige a tu doctor y programa tu cita en segundos.' };
+    if (path.startsWith('/paciente')) return contextMap.paciente;
+    if (path.startsWith('/medico')) return contextMap.medico;
+    if (path.startsWith('/admin/especialidades')) return { ...contextMap.admin, welcome: '¡Hola! Aquí puedes ver la lista de especialidades de la clínica, editarlas o añadir nuevas de forma rápida.' };
+    if (path.startsWith('/admin/medicos')) return { ...contextMap.admin, welcome: '¡Hola! Este es el registro del personal médico. Aquí puedes gestionar sus horarios, especialidades y datos de contacto.' };
+    if (path.startsWith('/admin')) return { ...contextMap.admin, welcome: '¡Hola! En este panel puedes ver el resumen gráfico del estado de las citas, médicos y reportes de hoy.' };
+    return contextMap.login;
+  }
+
+  function getOverlayMessage() {
+    const path = window.location.pathname || '/';
+    if (path === '/login' || path === '/registro') return '¡Hola, soy Jax! Ingresa tus credenciales aquí para acceder de forma segura a tu cuenta médica.';
+    if (path.startsWith('/admin/dashboard')) return '¡Hola! En este panel puedes ver el resumen gráfico del estado de las citas, médicos y reportes de hoy.';
+    if (path.startsWith('/admin/especialidades')) return '¡Hola! Aquí puedes ver la lista de especialidades de la clínica, editarlas o añadir nuevas de forma rápida.';
+    if (path.startsWith('/admin/medicos')) return '¡Hola! Este es el registro del personal médico. Aquí puedes gestionar sus horarios, especialidades y datos de contacto.';
+    if (path.startsWith('/paciente/dashboard')) return '¡Hola! Bienvenido a tu portal. Aquí puedes agendar tus citas o revisar las que ya tienes programadas.';
+    if (path.startsWith('/paciente/reservar')) return '¡Hola! Selecciona la especialidad que necesitas, elige a tu doctor y programa tu cita en segundos.';
+    if (path.startsWith('/admin')) return '¡Hola! Desde este panel puedes administrar la operación de la clínica con rapidez.';
+    if (path.startsWith('/paciente')) return '¡Hola! Aquí puedes trabajar tus citas y trámites del paciente.';
+    return '¡Hola! Estoy aquí para ayudarte a moverte por la plataforma con tranquilidad.';
+  }
+
+  function createBubble(text, type) {
+    const bubble = document.createElement('div');
+    bubble.className = `chat-bubble chat-bubble-${type}`;
+    bubble.textContent = text;
+    return bubble;
+  }
+
+  function renderQuickActions(actions) {
+    const actionsBox = document.getElementById('chatbox-actions');
+    if (!actionsBox) return;
+    actionsBox.innerHTML = '';
+    actions.forEach((action) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'chat-action';
+      button.textContent = action;
+      button.onclick = function (event) {
+        event.stopPropagation();
+        handleQuickReply(action);
+      };
+      actionsBox.appendChild(button);
+    });
+  }
+
+  function appendMessage(text, type) {
+    const messages = document.getElementById('chatbox-messages');
+    if (!messages) return;
+    const bubble = createBubble(text, type);
+    messages.appendChild(bubble);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function getReply(action) {
+    const context = getContext();
+    const lower = action.toLowerCase();
+    if (lower.includes('registr')) return 'Puedes registrarte desde la opción de registro y luego reservar tus citas desde el panel de paciente.';
+    if (lower.includes('reserv')) return 'Dirígete a la sección Reservar cita y elige especialidad, médico, fecha y horario disponible.';
+    if (lower.includes('historial') || lower.includes('cita')) return 'En tu panel puedes revisar tus citas activas y el estado de cada una en un solo lugar.';
+    if (lower.includes('agenda')) return 'Tu agenda te permite ver turnos, confirmar pacientes y mantener el día organizado.';
+    if (lower.includes('bloque')) return 'Desde solicitudes de bloqueo puedes indicar los días en los que no atenderás.';
+    if (lower.includes('solicitud')) return 'Las solicitudes pendientes aparecen en el panel de administración para revisión rápida.';
+    if (lower.includes('reporte')) return 'Los reportes te ayudan a revisar la actividad general por estado, especialidad y médico.';
+    if (lower.includes('médico') || lower.includes('medico')) return 'Puedes gestionar médicos desde la sección dedicada y asignarles especialidades.';
+    return context.welcome;
+  }
+
+  function handleQuickReply(action) {
+    appendMessage(action, 'user');
+    const reply = getReply(action);
+    setTimeout(() => appendMessage(reply, 'bot'), 250);
+    setTimeout(() => renderQuickActions(getContext().quickActions), 320);
+  }
+
+  function showFloatingButton() {
+    const button = document.getElementById('jax-floating-button');
+    if (button) {
+      button.classList.add('is-visible');
+    }
+  }
+
+  function dismissWelcome() {
+    const overlay = document.getElementById('jax-welcome-overlay');
+    if (!overlay) return;
+    overlay.classList.add('is-hidden');
+    setTimeout(() => {
+      overlay.style.display = 'none';
+      showFloatingButton();
+    }, 400);
+  }
+
+  window.sendUserMessage = function () {
+    const input = document.getElementById('chatbox-input');
+    const value = input ? input.value.trim() : '';
+    if (!value) return;
+    appendMessage(value, 'user');
+    input.value = '';
+    const reply = value.toLowerCase().includes('ayuda')
+      ? 'Puedo ayudarte con acceso, reservas, agenda o reportes. Elige una opción rápida o escribe tu consulta.'
+      : 'Gracias por tu mensaje. Estoy aquí para orientarte paso a paso dentro de la plataforma.';
+    setTimeout(() => appendMessage(reply, 'bot'), 220);
+    setTimeout(() => renderQuickActions(getContext().quickActions), 320);
+  };
+
+  window.toggleChat = function () {
+    const chatbox = document.getElementById('chatbox-window');
+    const button = document.getElementById('jax-floating-button');
+    if (!chatbox) return;
+    const willOpen = !chatbox.classList.contains('is-open');
+    chatbox.classList.toggle('is-open', willOpen);
+    if (button) button.classList.toggle('is-active', willOpen);
+    if (willOpen) {
+      const input = document.getElementById('chatbox-input');
+      setTimeout(() => input && input.focus(), 180);
+    }
+  };
+
+  window.closeChat = function () {
+    const chatbox = document.getElementById('chatbox-window');
+    const button = document.getElementById('jax-floating-button');
+    if (chatbox) chatbox.classList.remove('is-open');
+    if (button) button.classList.remove('is-active');
+  };
+
+  function init() {
+    const chatbox = document.getElementById('chatbox-window');
+    const messages = document.getElementById('chatbox-messages');
+    const overlay = document.getElementById('jax-welcome-overlay');
+    const button = document.getElementById('jax-floating-button');
+    if (!chatbox || !messages || !overlay || !button) return;
+
+    const context = getContext();
+    const overlayMessage = document.getElementById('jax-overlay-message');
+    if (overlayMessage) overlayMessage.textContent = getOverlayMessage();
+    renderQuickActions(context.quickActions);
+    appendMessage(context.welcome, 'bot');
+
+    overlay.addEventListener('click', dismissWelcome);
+    button.addEventListener('click', function (event) {
+      event.stopPropagation();
+      toggleChat();
+    });
+
+    document.addEventListener('click', function (event) {
+      const shell = document.getElementById('chatbot-shell');
+      if (shell && !shell.contains(event.target)) {
+        closeChat();
+      }
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+})();
+</script>
