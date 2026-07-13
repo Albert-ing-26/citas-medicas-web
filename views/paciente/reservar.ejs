@@ -21,66 +21,99 @@
       <p class="error"><%= error %></p>
     <% } %>
 
-    <form class="formulario" method="GET" action="/paciente/reservar">
-      <label for="id_especialidad">Especialidad</label>
-      <select id="id_especialidad" name="id_especialidad" required onchange="this.form.submit()">
-        <option value="">-- Selecciona --</option>
-        <% especialidades.forEach(e => { %>
-          <option value="<%= e.id_especialidad %>"
-            <%= String(seleccion.id_especialidad) === String(e.id_especialidad) ? 'selected' : '' %>>
-            <%= e.nombre %>
-          </option>
-        <% }) %>
-      </select>
+    <div class="reserva-shell">
+      <div class="reserva-panel">
+        <div class="reserva-step">Paso 1 · Selección</div>
+        <form class="formulario reserva-panel-form" method="GET" action="/paciente/reservar">
+          <label for="id_especialidad">Especialidad</label>
+          <select id="id_especialidad" name="id_especialidad" required onchange="this.form.submit()">
+            <option value="">-- Selecciona --</option>
+            <% especialidades.forEach(e => { %>
+              <option value="<%= e.id_especialidad %>"
+                <%= String(seleccion.id_especialidad) === String(e.id_especialidad) ? 'selected' : '' %>>
+                <%= e.nombre %>
+              </option>
+            <% }) %>
+          </select>
 
-      <% if (seleccion.id_especialidad) { %>
-        <label for="id_medico">Medico</label>
-        <select id="id_medico" name="id_medico" required onchange="this.form.submit()">
-          <option value="">-- Selecciona --</option>
-          <% medicos.forEach(m => { %>
-            <option value="<%= m.id_medico %>"
-              <%= String(seleccion.id_medico) === String(m.id_medico) ? 'selected' : '' %>>
-              <%= m.nombre %> <%= m.apellidos %>
-            </option>
-          <% }) %>
-        </select>
-        <% if (medicos.length === 0) { %>
-          <p class="nota">No hay medicos activos registrados en esta especialidad todavia.</p>
+          <% if (seleccion.id_especialidad) { %>
+            <label for="id_medico">Médico</label>
+            <select id="id_medico" name="id_medico" required onchange="this.form.submit()">
+              <option value="">-- Selecciona --</option>
+              <% medicos.forEach(m => { %>
+                <option value="<%= m.id_medico %>"
+                  <%= String(seleccion.id_medico) === String(m.id_medico) ? 'selected' : '' %>>
+                  <%= m.nombre %> <%= m.apellidos %>
+                </option>
+              <% }) %>
+            </select>
+            <% if (medicos.length === 0) { %>
+              <p class="nota">No hay médicos activos registrados en esta especialidad todavía.</p>
+            <% } %>
+          <% } %>
+
+          <% if (seleccion.id_especialidad && seleccion.id_medico) { %>
+            <label for="fecha">Fecha</label>
+            <input type="date" id="fecha" name="fecha" required min="<%= hoy %>"
+                   value="<%= seleccion.fecha || '' %>" onchange="this.form.submit()">
+          <% } %>
+        </form>
+
+        <% if (mensajeSlots) { %>
+          <p class="nota"><%= mensajeSlots %></p>
         <% } %>
-      <% } %>
 
-      <% if (seleccion.id_especialidad && seleccion.id_medico) { %>
-        <label for="fecha">Fecha</label>
-        <input type="date" id="fecha" name="fecha" required min="<%= hoy %>"
-               value="<%= seleccion.fecha || '' %>" onchange="this.form.submit()">
-      <% } %>
-    </form>
+        <% if (slots.length > 0) { %>
+          <div class="reserva-step">Paso 2 · Confirmación</div>
+          <form class="formulario reserva-panel-form" method="POST" action="/paciente/reservar">
+            <input type="hidden" name="id_especialidad" value="<%= seleccion.id_especialidad %>">
+            <input type="hidden" name="id_medico" value="<%= seleccion.id_medico %>">
+            <input type="hidden" name="fecha" value="<%= seleccion.fecha %>">
 
-    <% if (mensajeSlots) { %>
-      <p class="nota"><%= mensajeSlots %></p>
-    <% } %>
+            <label for="hora_inicio">Horario</label>
+            <select id="hora_inicio" name="hora_inicio" required>
+              <% slots.forEach(s => { %>
+                <option value="<%= s %>"><%= s.substring(0,5) %></option>
+              <% }) %>
+            </select>
 
-    <% if (slots.length > 0) { %>
-      <h3>Horarios disponibles con <%= medicoSeleccionado.nombre %> <%= medicoSeleccionado.apellidos %> el <%= seleccion.fecha %></h3>
-      <form class="formulario" method="POST" action="/paciente/reservar">
-        <input type="hidden" name="id_especialidad" value="<%= seleccion.id_especialidad %>">
-        <input type="hidden" name="id_medico" value="<%= seleccion.id_medico %>">
-        <input type="hidden" name="fecha" value="<%= seleccion.fecha %>">
+            <label for="motivo_consulta">Motivo de la consulta</label>
+            <input type="text" id="motivo_consulta" name="motivo_consulta" required
+                   placeholder="Ej: dolor de cabeza persistente">
 
-        <label for="hora_inicio">Horario</label>
-        <select id="hora_inicio" name="hora_inicio" required>
-          <% slots.forEach(s => { %>
-            <option value="<%= s %>"><%= s.substring(0,5) %></option>
-          <% }) %>
-        </select>
+            <button type="submit">Confirmar reserva</button>
+          </form>
+        <% } %>
+      </div>
 
-        <label for="motivo_consulta">Motivo de la consulta</label>
-        <input type="text" id="motivo_consulta" name="motivo_consulta" required
-               placeholder="Ej: dolor de cabeza persistente">
-
-        <button type="submit">Confirmar reserva</button>
-      </form>
-    <% } %>
+      <aside class="reserva-panel reserva-summary">
+        <div class="reserva-badge">Agenda en minutos</div>
+        <h3>Tu próxima cita se arma aquí</h3>
+        <div class="reserva-summary-list">
+          <div class="reserva-summary-item">
+            <span>Especialidad</span>
+            <strong><%= seleccion.id_especialidad ? (especialidades.find(e => String(e.id_especialidad) === String(seleccion.id_especialidad))?.nombre || 'Por elegir') : 'Por elegir' %></strong>
+          </div>
+          <div class="reserva-summary-item">
+            <span>Médico</span>
+            <strong><%= seleccion.id_medico ? (medicos.find(m => String(m.id_medico) === String(seleccion.id_medico)) ? medicos.find(m => String(m.id_medico) === String(seleccion.id_medico)).nombre + ' ' + medicos.find(m => String(m.id_medico) === String(seleccion.id_medico)).apellidos : 'Por elegir') : 'Por elegir' %></strong>
+          </div>
+          <div class="reserva-summary-item">
+            <span>Fecha</span>
+            <strong><%= seleccion.fecha || 'Por elegir' %></strong>
+          </div>
+        </div>
+        <div class="reserva-illustration">
+          <div class="icono">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 3l8 4v5c0 5.2-3.4 8.8-8 10-4.6-1.2-8-4.8-8-10V7l8-4z"/>
+              <path d="M9.5 12l1.8 1.8 3.2-3.3"/>
+            </svg>
+          </div>
+          <p>Selecciona tus datos para recibir horarios disponibles en segundos y reservar con total confianza.</p>
+        </div>
+      </aside>
+    </div>
   </div>
 </body>
 </html>

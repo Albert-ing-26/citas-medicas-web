@@ -72,8 +72,10 @@ body::before {
 }
 
 h1 {
-  padding: 22px 28px 0;
-  margin: 0;
+  width: min(1320px, calc(100% - 56px));
+  max-width: 1320px;
+  padding: 22px 0 0;
+  margin: 0 auto;
   font-family: var(--font-display);
   font-weight: 600;
   font-size: 26px;
@@ -105,11 +107,13 @@ h3 {
 
 nav {
   display: block;
+  width: min(1320px, calc(100% - 56px));
+  max-width: 1320px;
   padding: 14px 28px;
-  margin: 14px 28px 0;
+  margin: 14px auto 0;
   border-radius: 999px;
   background: linear-gradient(120deg, var(--primary-dark), var(--primary));
-  color: rgba(255, 255, 255, 0.38); /* atenua los separadores " | " que vienen del HTML */
+  color: rgba(255, 255, 255, 0.38);
   box-shadow: var(--shadow-md);
   position: relative;
 }
@@ -161,7 +165,10 @@ nav::after {
    --------------------------------------------------------- */
 
 .contenido {
-  padding: 24px 28px 48px;
+  width: min(1320px, calc(100% - 56px));
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 24px 0 48px;
   animation: aparecer 0.5s ease both;
 }
 
@@ -440,12 +447,136 @@ nav::after {
    --------------------------------------------------------- */
 
 .formulario {
-  max-width: 420px;
+  width: 100%;
+  max-width: 100%;
   background: var(--surface);
   padding: 24px;
   border-radius: var(--radius-lg);
   border: 1px solid var(--line);
   box-shadow: var(--shadow-sm);
+}
+
+.reserva-shell {
+  display: grid;
+  grid-template-columns: 1.35fr 0.85fr;
+  gap: 20px;
+  align-items: start;
+  margin-top: 20px;
+}
+
+.reserva-panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 24px;
+}
+
+.reserva-panel-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.reserva-step {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--primary-dark);
+  margin-bottom: 6px;
+}
+
+.reserva-summary {
+  position: sticky;
+  top: 90px;
+  background: linear-gradient(135deg, rgba(13, 115, 119, 0.05), rgba(255, 111, 89, 0.06));
+}
+
+.reserva-summary h3 {
+  margin: 0 0 12px;
+  color: var(--ink);
+  font-size: 18px;
+  text-transform: none;
+  letter-spacing: -0.01em;
+}
+
+.reserva-summary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 16px 0 20px;
+}
+
+.reserva-summary-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(13, 115, 119, 0.12);
+}
+
+.reserva-summary-item span {
+  font-size: 12px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.reserva-summary-item strong {
+  font-size: 13px;
+  color: var(--ink);
+  text-align: right;
+}
+
+.reserva-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.reserva-illustration {
+  padding: 16px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid var(--line);
+}
+
+.reserva-illustration .icono {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.reserva-illustration .icono svg {
+  width: 24px;
+  height: 24px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+}
+
+.reserva-illustration p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
 }
 
 .formulario label {
@@ -512,18 +643,66 @@ nav::after {
    Reportes: tarjetas resumen y barra de proporcion
    --------------------------------------------------------- */
 
-.tarjetas-resumen {
+.dashboard-shell {
   display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.dashboard-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   gap: 16px;
-  flex-wrap: wrap;
-  margin-bottom: 24px;
+  padding: 24px 26px;
+  background: linear-gradient(135deg, rgba(13, 115, 119, 0.08), rgba(255, 255, 255, 0.95));
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.dashboard-hero .eyebrow {
+  display: inline-block;
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--primary-dark);
+}
+
+.dashboard-hero .dashboard-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--primary-dark);
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+  white-space: nowrap;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1.35fr 0.9fr;
+  gap: 18px;
+  align-items: start;
+}
+
+.tarjetas-resumen {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 14px;
+  margin-bottom: 0;
 }
 
 .tarjeta {
   background: var(--surface);
   border-radius: var(--radius-md);
   padding: 18px 22px;
-  min-width: 150px;
+  min-width: 0;
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--line);
   border-top: 3px solid var(--primary);
@@ -631,9 +810,36 @@ nav::after {
 
 .grid-acciones {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 16px;
-  margin: 8px 0 32px;
+  margin: 6px 0 32px;
+}
+
+.dashboard-chart {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 18px;
+}
+
+.dashboard-chart h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+  text-transform: none;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.dashboard-chart p {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.dashboard-chart canvas {
+  width: 100% !important;
+  height: 240px !important;
 }
 
 .tarjeta-accion {
@@ -978,15 +1184,28 @@ body.pagina-login {
    Responsive
    --------------------------------------------------------- */
 
+@media (max-width: 900px) {
+  .reserva-shell,
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .reserva-summary {
+    position: static;
+  }
+}
+
 @media (max-width: 640px) {
-  h1 { font-size: 21px; padding: 18px 16px 0; }
-  nav { margin: 10px 16px 0; padding: 12px 16px; }
-  .contenido { padding: 18px 16px 40px; }
+  h1 { font-size: 21px; width: calc(100% - 32px); padding: 18px 0 0; }
+  nav { margin: 10px auto 0; padding: 12px 16px; width: calc(100% - 32px); }
+  .contenido { width: calc(100% - 32px); padding: 18px 0 40px; }
   .login-box, .registro-box { margin: 32px 16px; padding: 24px; }
   .tabla th, .tabla td { padding: 10px; font-size: 13px; }
   .tarjetas-resumen { gap: 10px; }
-  .tarjeta { min-width: 120px; padding: 14px 16px; }
+  .tarjeta { padding: 14px 16px; }
   .grid-acciones { grid-template-columns: 1fr; }
+  .dashboard-hero { flex-direction: column; align-items: flex-start; }
+  .reserva-panel { padding: 18px; }
 }
 
 /* ---------------------------------------------------------

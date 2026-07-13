@@ -17,99 +17,144 @@
   </nav>
   <%- include('../partials/perfil-widget') %>
   <div class="contenido">
-    <p class="saludo-intro">Desde aqui puedes gestionar especialidades, medicos y pacientes, y revisar los reportes de citas.</p>
+    <div class="dashboard-shell">
+      <section class="dashboard-hero">
+        <div>
+          <div class="eyebrow">Panel de administración</div>
+          <h2 style="margin-bottom: 8px;">Supervisa el funcionamiento del centro con una vista más completa</h2>
+          <p class="saludo-intro" style="margin-bottom: 0;">Gestiona especialidades, médicos, pacientes y solicitudes desde un tablero más claro y visual.</p>
+        </div>
+        <div class="dashboard-pill">Operación en tiempo real</div>
+      </section>
 
-    <div class="tarjetas-resumen">
-      <div class="tarjeta">
-        <div class="numero"><%= totalEspecialidades %></div>
-        <div class="etiqueta">Especialidades</div>
+      <div class="dashboard-grid">
+        <div>
+          <div class="tarjetas-resumen">
+            <div class="tarjeta">
+              <div class="numero"><%= totalEspecialidades %></div>
+              <div class="etiqueta">Especialidades</div>
+            </div>
+            <div class="tarjeta">
+              <div class="numero"><%= totalMedicos %></div>
+              <div class="etiqueta">Médicos activos</div>
+            </div>
+            <div class="tarjeta">
+              <div class="numero"><%= totalPacientes %></div>
+              <div class="etiqueta">Pacientes activos</div>
+            </div>
+            <div class="tarjeta">
+              <div class="numero"><%= citasHoy %></div>
+              <div class="etiqueta">Citas hoy</div>
+            </div>
+            <div class="tarjeta">
+              <div class="numero"><%= solicitudesPendientes %></div>
+              <div class="etiqueta">Solicitudes pendientes</div>
+            </div>
+          </div>
+
+          <div class="grid-acciones">
+            <a href="/admin/especialidades" class="tarjeta-accion">
+              <div class="icono">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-4z"/>
+                  <path d="M9.5 12l1.8 1.8L14.5 10"/>
+                </svg>
+              </div>
+              <div class="titulo">Especialidades</div>
+              <div class="descripcion">Crea y edita el catálogo de especialidades y su duración de cita.</div>
+              <div class="flecha">Gestionar &rarr;</div>
+            </a>
+
+            <a href="/admin/medicos" class="tarjeta-accion">
+              <div class="icono">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="12" cy="8" r="3.2"/>
+                  <path d="M5 20c0-4 3-6.5 7-6.5s7 2.5 7 6.5"/>
+                  <path d="M13.5 5.2c1 .4 1.7 1.4 1.7 2.6s-.7 2.2-1.7 2.6"/>
+                </svg>
+              </div>
+              <div class="titulo">Médicos</div>
+              <div class="descripcion">Registra médicos nuevos y asígnales su especialidad.</div>
+              <div class="flecha">Gestionar &rarr;</div>
+            </a>
+
+            <a href="/admin/pacientes" class="tarjeta-accion">
+              <div class="icono">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="9" cy="8" r="3"/>
+                  <path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/>
+                  <circle cx="17" cy="7" r="2.2"/>
+                  <path d="M15.5 12.3c2.3.4 4 2.3 4 4.7"/>
+                </svg>
+              </div>
+              <div class="titulo">Pacientes</div>
+              <div class="descripcion">Consulta los pacientes registrados y bloquea o elimina cuentas.</div>
+              <div class="flecha">Gestionar &rarr;</div>
+            </a>
+
+            <a href="/admin/solicitudes-bloqueo" class="tarjeta-accion<%= solicitudesPendientes > 0 ? ' destacada' : '' %>">
+              <div class="icono">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M8 3v4M16 3v4M4 9h16M6 5h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2z"/>
+                  <path d="M9.5 13.5l5 5M14.5 13.5l-5 5"/>
+                </svg>
+              </div>
+              <div class="titulo">Solicitudes de bloqueo</div>
+              <div class="descripcion">
+                <%= solicitudesPendientes > 0
+                    ? solicitudesPendientes + ' solicitud(es) esperando tu aprobación.'
+                    : 'Aprueba o rechaza los días que los médicos piden bloquear.' %>
+              </div>
+              <div class="flecha">Revisar &rarr;</div>
+            </a>
+
+            <a href="/admin/reportes" class="tarjeta-accion destacada">
+              <div class="icono">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4 20V10M11 20V4M18 20v-7"/>
+                  <path d="M3 20h18"/>
+                </svg>
+              </div>
+              <div class="titulo">Reportes</div>
+              <div class="descripcion">Mira cuántas citas hay por estado, especialidad y médico.</div>
+              <div class="flecha">Ver reportes &rarr;</div>
+            </a>
+          </div>
+        </div>
+
+        <div class="dashboard-chart">
+          <h3>Actividad del centro</h3>
+          <p>Un vistazo rápido a la carga operativa del día para que cada decisión sea más sencilla.</p>
+          <canvas id="adminChart" width="300" height="220"></canvas>
+        </div>
       </div>
-      <div class="tarjeta">
-        <div class="numero"><%= totalMedicos %></div>
-        <div class="etiqueta">Medicos activos</div>
-      </div>
-      <div class="tarjeta">
-        <div class="numero"><%= totalPacientes %></div>
-        <div class="etiqueta">Pacientes activos</div>
-      </div>
-      <div class="tarjeta">
-        <div class="numero"><%= citasHoy %></div>
-        <div class="etiqueta">Citas hoy</div>
-      </div>
-      <div class="tarjeta">
-        <div class="numero"><%= solicitudesPendientes %></div>
-        <div class="etiqueta">Solicitudes pendientes</div>
-      </div>
-    </div>
-
-    <div class="grid-acciones">
-      <a href="/admin/especialidades" class="tarjeta-accion">
-        <div class="icono">
-          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-4z"/>
-            <path d="M9.5 12l1.8 1.8L14.5 10"/>
-          </svg>
-        </div>
-        <div class="titulo">Especialidades</div>
-        <div class="descripcion">Crea y edita el catalogo de especialidades y su duracion de cita.</div>
-        <div class="flecha">Gestionar &rarr;</div>
-      </a>
-
-      <a href="/admin/medicos" class="tarjeta-accion">
-        <div class="icono">
-          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="12" cy="8" r="3.2"/>
-            <path d="M5 20c0-4 3-6.5 7-6.5s7 2.5 7 6.5"/>
-            <path d="M13.5 5.2c1 .4 1.7 1.4 1.7 2.6s-.7 2.2-1.7 2.6"/>
-          </svg>
-        </div>
-        <div class="titulo">Medicos</div>
-        <div class="descripcion">Registra medicos nuevos y asignales su especialidad.</div>
-        <div class="flecha">Gestionar &rarr;</div>
-      </a>
-
-      <a href="/admin/pacientes" class="tarjeta-accion">
-        <div class="icono">
-          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="9" cy="8" r="3"/>
-            <path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/>
-            <circle cx="17" cy="7" r="2.2"/>
-            <path d="M15.5 12.3c2.3.4 4 2.3 4 4.7"/>
-          </svg>
-        </div>
-        <div class="titulo">Pacientes</div>
-        <div class="descripcion">Consulta los pacientes registrados y bloquea o elimina cuentas.</div>
-        <div class="flecha">Gestionar &rarr;</div>
-      </a>
-
-      <a href="/admin/solicitudes-bloqueo" class="tarjeta-accion<%= solicitudesPendientes > 0 ? ' destacada' : '' %>">
-        <div class="icono">
-          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M8 3v4M16 3v4M4 9h16M6 5h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2z"/>
-            <path d="M9.5 13.5l5 5M14.5 13.5l-5 5"/>
-          </svg>
-        </div>
-        <div class="titulo">Solicitudes de bloqueo</div>
-        <div class="descripcion">
-          <%= solicitudesPendientes > 0
-              ? solicitudesPendientes + ' solicitud(es) esperando tu aprobacion.'
-              : 'Aprueba o rechaza los dias que los medicos piden bloquear.' %>
-        </div>
-        <div class="flecha">Revisar &rarr;</div>
-      </a>
-
-      <a href="/admin/reportes" class="tarjeta-accion destacada">
-        <div class="icono">
-          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M4 20V10M11 20V4M18 20v-7"/>
-            <path d="M3 20h18"/>
-          </svg>
-        </div>
-        <div class="titulo">Reportes</div>
-        <div class="descripcion">Mira cuantas citas hay por estado, especialidad y medico.</div>
-        <div class="flecha">Ver reportes &rarr;</div>
-      </a>
     </div>
   </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const ctx = document.getElementById('adminChart');
+      if (!ctx) return;
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Especialidades', 'Médicos', 'Pacientes', 'Citas hoy'],
+          datasets: [{
+            label: 'Resumen general',
+            data: [<%= totalEspecialidades %>, <%= totalMedicos %>, <%= totalPacientes %>, <%= citasHoy %>],
+            backgroundColor: ['#0d7377', '#0a5658', '#ff6f59', '#1e9e63'],
+            borderRadius: 10
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+    });
+  </script>
 </body>
 </html>
