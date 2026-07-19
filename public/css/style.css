@@ -1600,3 +1600,395 @@ body.pagina-login {
 @media (max-width: 780px) {
   .perfil-grid { grid-template-columns: 1fr; }
 }
+
+/* =========================================================
+   PACIENTE PORTAL REDESIGN
+   ========================================================= */
+
+.paciente-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 28px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  width: 100%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.paciente-header h1 {
+  width: auto;
+  padding: 0;
+  margin: 0;
+  font-size: 22px;
+  color: var(--primary-dark);
+}
+
+.paciente-nav {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+  margin: 0;
+  width: auto;
+}
+
+.paciente-nav::after {
+  display: none;
+}
+
+.paciente-nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 14px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.paciente-nav-link:hover {
+  color: var(--primary);
+  background: var(--primary-light);
+}
+
+.paciente-nav-link.active {
+  color: white;
+  background: linear-gradient(120deg, var(--primary-dark), var(--primary));
+}
+
+.paciente-nav-link svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+}
+
+.empty-state {
+  padding: 40px;
+  text-align: center;
+  background: var(--bg);
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--line);
+}
+
+.empty-state svg {
+  width: 48px;
+  height: 48px;
+  color: var(--muted);
+  margin-bottom: 12px;
+  stroke: currentColor;
+  fill: none;
+}
+
+.empty-state p {
+  margin: 0 0 16px;
+  color: var(--muted);
+}
+
+/* ---------------------------------------------------------
+   SLOTS GRID (RESERVA DE CITAS)
+   --------------------------------------------------------- */
+
+.slots-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(85px, 1fr));
+  gap: 12px;
+  margin-top: 10px;
+  margin-bottom: 24px;
+}
+
+.slot-input {
+  display: none;
+}
+
+.slot-block {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 10px;
+  background: var(--surface);
+  border: 2px solid var(--line);
+  border-radius: var(--radius-sm);
+  color: var(--ink);
+  font-weight: 600;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.slot-block:hover {
+  background: var(--primary-light);
+  border-color: var(--primary);
+  color: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(13, 115, 119, 0.1);
+}
+
+.slot-input:checked + .slot-block {
+  background: linear-gradient(120deg, var(--primary), var(--primary-dark));
+  color: white;
+  border-color: var(--primary-dark);
+  box-shadow: 0 6px 14px rgba(13, 115, 119, 0.25);
+  transform: translateY(-2px);
+}
+
+/* Estado para slots ocupados (si el backend los provee en el futuro) */
+.slot-input:disabled + .slot-block {
+  background: var(--bg);
+  color: #a0b0ab;
+  border-color: var(--line);
+  cursor: not-allowed;
+  text-decoration: line-through;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ---------------------------------------------------------
+   FIX: PERFIL WIDGET IN PACIENTE NAV
+   --------------------------------------------------------- */
+
+.paciente-nav .perfil-widget {
+  position: relative;
+  top: auto;
+  right: auto;
+  margin-left: 12px; /* Espacio extra asegurado para que respire frente al boton Citas */
+}
+
+.paciente-nav .perfil-menu {
+  top: calc(100% + 14px);
+}
+
+/* ---------------------------------------------------------
+   PREMIUM CIRCULAR REDESIGN
+   --------------------------------------------------------- */
+
+:root {
+  --gold: #D4AF37;
+  --dark-green: #023020;
+  --teal: #008080;
+}
+
+.paciente-header {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.paciente-header h1 {
+  color: var(--dark-green);
+}
+
+.paciente-nav-link {
+  border-radius: 999px;
+  padding: 10px 20px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--line);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.paciente-nav-link.active {
+  background: var(--teal);
+  color: white;
+  border-color: var(--teal);
+  box-shadow: 0 4px 10px rgba(0, 128, 128, 0.3);
+}
+
+.paciente-nav .perfil-widget {
+  margin-left: 24px;
+}
+
+.perfil-avatar {
+  border-radius: 50%;
+  border: 2px solid var(--gold);
+  background: white;
+  color: var(--dark-green);
+  width: 48px;
+  height: 48px;
+}
+
+/* Circular Components */
+
+.circular-stats-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 30px;
+  background: var(--surface);
+  border-radius: 999px;
+  border: 2px solid var(--gold);
+  box-shadow: var(--shadow-md);
+  margin-bottom: 30px;
+}
+
+.stat-circle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid var(--line);
+}
+
+.stat-circle .numero {
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--dark-green);
+  line-height: 1;
+}
+
+.stat-circle .etiqueta {
+  font-size: 12px;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-top: 8px;
+  text-align: center;
+}
+
+.stat-divider {
+  width: 2px;
+  height: 80px;
+  background: var(--gold);
+}
+
+.circular-action-container {
+  display: flex;
+  gap: 30px;
+  justify-content: center;
+}
+
+.action-circle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: var(--teal);
+  border: 4px solid var(--gold);
+  color: white;
+  text-decoration: none;
+  box-shadow: 0 10px 25px rgba(0, 128, 128, 0.4);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.action-circle:hover {
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 0 15px 35px rgba(0, 128, 128, 0.5);
+  color: white;
+}
+
+.action-circle .icono {
+  background: transparent;
+  color: white;
+  margin-bottom: 10px;
+  width: 60px;
+  height: 60px;
+}
+
+.action-circle .icono svg {
+  width: 40px;
+  height: 40px;
+}
+
+.action-circle .titulo {
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+  color: white;
+}
+
+.action-circle .descripcion, .action-circle .flecha {
+  display: none;
+}
+
+/* ---------------------------------------------------------
+   DISEÑO EXACTO: TARJETAS DE ACCION (COMO IMAGEN)
+   --------------------------------------------------------- */
+
+.grid-acciones-nuevas {
+  display: flex;
+  gap: 24px;
+  justify-content: flex-start;
+  margin-top: 24px;
+}
+
+.tarjeta-accion-nueva {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 32px 24px;
+  width: 300px;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid #f1f5f4;
+}
+
+.tarjeta-accion-nueva:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+}
+
+.icono-contenedor {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  background: #e9f0ee; /* Menta/teal muy claro */
+  border-radius: 20px;
+  margin-bottom: 20px;
+  color: #0d3b32; /* Verde muy oscuro */
+}
+
+.icono-contenedor svg {
+  width: 34px;
+  height: 34px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+}
+
+.tarjeta-accion-nueva .titulo {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 700;
+  color: #0d3b32;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.tarjeta-accion-nueva .descripcion {
+  font-size: 13px;
+  color: #5e7770;
+  text-align: center;
+  line-height: 1.5;
+  margin-bottom: 24px;
+}
+
+.tarjeta-accion-nueva .flecha {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0d3b32;
+}
