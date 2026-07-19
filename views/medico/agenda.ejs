@@ -2,92 +2,135 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Mi agenda</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Agenda - Panel Médico</title>
   <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/admin.css">
 </head>
-<body>
-  <h1>Bienvenido, Dr(a). <%= usuario.nombre %></h1>
-  <nav>
-    <a href="/medico">Inicio</a> |
-    <a href="/medico/agenda">Mi agenda</a> |
-    <a href="/medico/dias-bloqueados">Solicitudes de bloqueo</a>
-  </nav>
-  <%- include('../partials/perfil-widget') %>
+<body class="admin-body">
+  <div class="admin-container">
+    <!-- Sidebar Navigation -->
+    <%- include('../partials/medico-sidebar', { activePage: 'agenda' }) %>
 
-  <div class="contenido">
-    <h2>Mi agenda</h2>
+    <div class="admin-main">
+      <!-- Top Header -->
+      <%- include('../partials/medico-header', { title: 'Mi Agenda Médica' }) %>
 
-    <p>
-      <a href="/medico/agenda?fecha=<%= diaAnterior %>">&laquo; Dia anterior</a>
-      &nbsp;|&nbsp;
-      <a href="/medico/agenda?fecha=<%= diaSiguiente %>">Dia siguiente &raquo;</a>
-    </p>
+      <div class="admin-content">
+        <!-- Calendar Navigation & Date Form -->
+        <div class="filter-bar" style="justify-content: space-between; align-items: center; margin-bottom: 24px;">
+          <!-- Date selector form -->
+          <form method="GET" action="/medico/agenda" style="display: flex; align-items: flex-end; gap: 12px; margin: 0;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="fecha">Ver agenda del día</label>
+              <input type="date" id="fecha" name="fecha" class="form-control" value="<%= fecha %>" onchange="this.form.submit()" style="padding: 10px 14px;">
+            </div>
+          </form>
 
-    <form method="GET" action="/medico/agenda" class="formulario" style="max-width:260px;">
-      <label for="fecha">Ver agenda del dia</label>
-      <input type="date" id="fecha" name="fecha" value="<%= fecha %>" onchange="this.form.submit()">
-    </form>
+          <!-- Day navigation -->
+          <div style="display: flex; gap: 10px;">
+            <a href="/medico/agenda?fecha=<%= diaAnterior %>" class="btn btn-secondary" style="padding: 10px 18px;">
+              &laquo; Día anterior
+            </a>
+            <a href="/medico/agenda?fecha=<%= diaSiguiente %>" class="btn btn-secondary" style="padding: 10px 18px;">
+              Día siguiente &raquo;
+            </a>
+          </div>
+        </div>
 
-    <% if (bloqueado && bloqueado.estado === 'aprobado') { %>
-      <p class="nota">Tienes este dia bloqueado<%= bloqueado.motivo ? ' (' + bloqueado.motivo + ')' : '' %>. No se pueden reservar nuevas citas ese dia.</p>
-    <% } else if (bloqueado && bloqueado.estado === 'pendiente') { %>
-      <p class="nota" style="color:#b45309;">Tienes una solicitud de bloqueo pendiente de aprobacion para este dia. Los pacientes todavia pueden reservar hasta que el administrador la apruebe.</p>
-    <% } %>
-
-    <table class="tabla">
-      <thead>
-        <tr>
-          <th>Hora</th>
-          <th>Paciente</th>
-          <th>DNI</th>
-          <th>Telefono</th>
-          <th>Motivo</th>
-          <th>Estado</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% citas.forEach(c => { %>
-          <tr>
-            <td><%= c.hora_inicio.substring(0,5) %> - <%= c.hora_fin.substring(0,5) %></td>
-            <td><%= c.paciente_nombre %> <%= c.paciente_apellidos %></td>
-            <td><%= c.dni %></td>
-            <td><%= c.telefono || '-' %></td>
-            <td><%= c.motivo_consulta %></td>
-            <td>
-              <span class="<%= (c.estado === 'cancelada') ? 'estado-bloqueado' : 'estado-activo' %>">
-                <%= c.estado %>
-              </span>
-            </td>
-            <td>
-              <% if (c.estado === 'pendiente') { %>
-                <form action="/medico/agenda/<%= c.id_cita %>/confirmar" method="POST" style="display:inline">
-                  <input type="hidden" name="fecha" value="<%= fecha %>">
-                  <button type="submit" class="link-accion">Confirmar</button>
-                </form>
-              <% } %>
-              <% if (c.estado === 'pendiente' || c.estado === 'confirmada') { %>
-                <form action="/medico/agenda/<%= c.id_cita %>/atender" method="POST" style="display:inline">
-                  <input type="hidden" name="fecha" value="<%= fecha %>">
-                  <button type="submit" class="link-accion">Marcar atendida</button>
-                </form>
-                <form action="/medico/agenda/<%= c.id_cita %>/cancelar" method="POST" style="display:inline"
-                      onsubmit="return confirm('Seguro que deseas cancelar esta cita?');">
-                  <input type="hidden" name="fecha" value="<%= fecha %>">
-                  <button type="submit" class="link-eliminar">Cancelar</button>
-                </form>
-              <% } %>
-              <% if (c.estado === 'atendida' || c.estado === 'cancelada') { %>
-                -
-              <% } %>
-            </td>
-          </tr>
-        <% }) %>
-        <% if (citas.length === 0) { %>
-          <tr><td colspan="7">No tienes citas agendadas para este dia.</td></tr>
+        <!-- Blocking Notifications -->
+        <% if (bloqueado && bloqueado.estado === 'aprobado') { %>
+          <div class="alert alert-danger" style="margin-bottom: 24px;">
+            <strong>Día Bloqueado:</strong> Tienes este día bloqueado para consulta<%= bloqueado.motivo ? ' (' + bloqueado.motivo + ')' : '' %>. No se admiten reservas.
+          </div>
+        <% } else if (bloqueado && bloqueado.estado === 'pendiente') { %>
+          <div class="alert alert-info" style="margin-bottom: 24px; background: #fffbeb; color: #b45309; border-color: #fde68a;">
+            <strong>Solicitud Pendiente:</strong> Solicitaste bloquear este día. Los pacientes aún pueden reservar hasta que el administrador lo apruebe.
+          </div>
         <% } %>
-      </tbody>
-    </table>
+
+        <!-- Agenda Table -->
+        <div class="table-container">
+          <div class="table-header-bar">
+            <h3>Citas Programadas para el <%= fecha %></h3>
+            <span style="font-size: 12px; color: var(--admin-muted); font-weight: 500;"><%= citas.length %> citas registradas</span>
+          </div>
+
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Hora</th>
+                <th>Paciente</th>
+                <th>DNI</th>
+                <th>Teléfono</th>
+                <th>Motivo de Consulta</th>
+                <th>Estado</th>
+                <th style="text-align: right;">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% citas.forEach(c => { %>
+                <tr>
+                  <td style="font-weight: 600; color: var(--admin-primary); font-family: var(--font-mono); font-size: 13px;">
+                    <%= c.hora_inicio.substring(0,5) %> - <%= c.hora_fin.substring(0,5) %>
+                  </td>
+                  <td>
+                    <div style="font-weight: 600;"><%= c.paciente_nombre %> <%= c.paciente_apellidos %></div>
+                  </td>
+                  <td style="font-family: var(--font-mono); font-size: 13px; color: var(--admin-muted);"><%= c.dni %></td>
+                  <td><%= c.telefono || '-' %></td>
+                  <td>
+                    <span style="font-style: italic; color: var(--admin-muted);"><%= c.motivo_consulta %></span>
+                  </td>
+                  <td>
+                    <!-- Status badge -->
+                    <span class="status-badge <%= (c.estado === 'cancelada') ? 'bloqueado' : (c.estado === 'confirmada' ? 'confirmada' : (c.estado === 'atendida' ? 'activo' : 'pendiente')) %>" style="text-transform: capitalize;">
+                      <%= c.estado %>
+                    </span>
+                  </td>
+                  <td style="text-align: right;">
+                    <!-- Actions -->
+                    <% if (c.estado === 'pendiente') { %>
+                      <form action="/medico/agenda/<%= c.id_cita %>/confirmar" method="POST" style="display:inline">
+                        <input type="hidden" name="fecha" value="<%= fecha %>">
+                        <button type="submit" class="table-action-btn" style="color: #1e9e63; background: #e7f7ee; border-radius: 4px;">
+                          Confirmar
+                        </button>
+                      </form>
+                    <% } %>
+                    <% if (c.estado === 'pendiente' || c.estado === 'confirmada') { %>
+                      <form action="/medico/agenda/<%= c.id_cita %>/atender" method="POST" style="display:inline">
+                        <input type="hidden" name="fecha" value="<%= fecha %>">
+                        <button type="submit" class="table-action-btn">
+                          Atendida
+                        </button>
+                      </form>
+                      <form action="/medico/agenda/<%= c.id_cita %>/cancelar" method="POST" style="display:inline"
+                            onsubmit="return confirm('¿Seguro que deseas cancelar esta cita?');">
+                        <input type="hidden" name="fecha" value="<%= fecha %>">
+                        <button type="submit" class="table-action-btn eliminar">
+                          Cancelar
+                        </button>
+                      </form>
+                    <% } %>
+                    <% if (c.estado === 'atendida' || c.estado === 'cancelada') { %>
+                      <span style="color: var(--admin-muted); font-size: 12px;">-</span>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }) %>
+              <% if (citas.length === 0) { %>
+                <tr>
+                  <td colspan="7" style="text-align: center; color: var(--admin-muted); padding: 30px;">
+                    No tienes citas agendadas para este día.
+                  </td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   </div>
 </body>
 </html>
