@@ -2,79 +2,126 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Solicitudes de bloqueo - Panel Administrador</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solicitudes de Bloqueo - Panel Administrador</title>
   <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/admin.css">
 </head>
-<body>
-  <h1>Bienvenido, <%= usuario.nombre %> (Administrador)</h1>
-  <nav>
-    <a href="/admin">Inicio</a> |
-    <a href="/admin/especialidades">Especialidades</a> |
-    <a href="/admin/medicos">Medicos</a> |
-    <a href="/admin/pacientes">Pacientes</a> |
-    <a href="/admin/solicitudes-bloqueo">Solicitudes</a> |
-    <a href="/admin/reportes">Reportes</a>
-  </nav>
-  <%- include('../partials/perfil-widget') %>
+<body class="admin-body">
+  <div class="admin-container">
+    <!-- Sidebar Navigation -->
+    <%- include('../partials/admin-sidebar', { activePage: 'solicitudes' }) %>
 
-  <div class="contenido">
-    <h2>Solicitudes de bloqueo de dias</h2>
-    <p class="nota">Cuando un medico solicita bloquear un dia, aparece aqui como pendiente. Mientras no la apruebes, los pacientes todavia pueden reservar con ese medico ese dia.</p>
+    <div class="admin-main">
+      <!-- Top Header -->
+      <%- include('../partials/admin-header', { title: 'Solicitudes de Bloqueo de Días' }) %>
 
-    <% if (error) { %>
-      <p class="error"><%= error %></p>
-    <% } %>
-
-    <table class="tabla">
-      <thead>
-        <tr>
-          <th>Medico</th>
-          <th>Especialidad</th>
-          <th>Fecha</th>
-          <th>Motivo</th>
-          <th>Citas agendadas ese dia</th>
-          <th>Estado</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% solicitudes.forEach(s => { %>
-          <tr>
-            <td><%= s.nombre %> <%= s.apellidos %></td>
-            <td><%= s.especialidad %></td>
-            <td><%= s.fecha.toISOString ? s.fecha.toISOString().substring(0,10) : s.fecha %></td>
-            <td><%= s.motivo || '-' %></td>
-            <td><%= s.citas_afectadas %></td>
-            <td>
-              <% if (s.estado === 'aprobado') { %>
-                <span class="estado-activo">Aprobado</span>
-              <% } else if (s.estado === 'pendiente') { %>
-                <span style="color:#b45309;font-weight:500;">Pendiente</span>
-              <% } else { %>
-                <span class="estado-bloqueado">Rechazado</span>
-              <% } %>
-            </td>
-            <td>
-              <% if (s.estado === 'pendiente') { %>
-                <form action="/admin/solicitudes-bloqueo/<%= s.id_bloqueo %>/aprobar" method="POST" style="display:inline">
-                  <button type="submit" class="link-accion">Aprobar</button>
-                </form>
-                <form action="/admin/solicitudes-bloqueo/<%= s.id_bloqueo %>/rechazar" method="POST"
-                      style="display:inline"
-                      onsubmit="return confirm('Rechazar esta solicitud de bloqueo?');">
-                  <button type="submit" class="link-eliminar">Rechazar</button>
-                </form>
-              <% } else { %>
-                <span class="nota">-</span>
-              <% } %>
-            </td>
-          </tr>
-        <% }) %>
-        <% if (solicitudes.length === 0) { %>
-          <tr><td colspan="7">No hay solicitudes de bloqueo todavia.</td></tr>
+      <div class="admin-content">
+        <!-- Error Alert -->
+        <% if (error) { %>
+          <div class="alert alert-danger"><%= error %></div>
         <% } %>
-      </tbody>
-    </table>
+
+        <div style="margin-bottom: 24px;">
+          <p style="color: var(--admin-muted); font-size: 14px; margin: 0;">
+            Cuando un médico solicita bloquear una fecha por motivos personales o congresos, aparecerá aquí como pendiente.
+            <strong>Mientras no apruebes la solicitud</strong>, los pacientes aún pueden reservar citas con ese médico en dicho día.
+          </p>
+        </div>
+
+        <!-- Requests Table -->
+        <div class="table-container">
+          <div class="table-header-bar">
+            <h3>Historial de Solicitudes</h3>
+            <span style="font-size: 12px; color: var(--admin-muted); font-weight: 500;"><%= solicitudes.length %> solicitudes registradas</span>
+          </div>
+
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Médico</th>
+                <th>Especialidad</th>
+                <th>Fecha a Bloquear</th>
+                <th>Motivo / Razón</th>
+                <th>Citas Afectadas</th>
+                <th>Estado</th>
+                <th style="text-align: right;">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% solicitudes.forEach(s => { %>
+                <tr>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <div style="width: 28px; height: 28px; border-radius: 50%; background: var(--admin-primary-light); color: var(--admin-primary); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 11px;">
+                        <%= s.nombre.charAt(0).toUpperCase() %>
+                      </div>
+                      <span style="font-weight: 600;">Dr(a). <%= s.nombre %> <%= s.apellidos %></span>
+                    </div>
+                  </td>
+                  <td><%= s.especialidad %></td>
+                  <td style="font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--admin-primary);">
+                    <%= s.fecha.toISOString ? s.fecha.toISOString().substring(0,10) : s.fecha %>
+                  </td>
+                  <td>
+                    <span style="font-style: italic; color: var(--admin-muted);"><%= s.motivo || '-' %></span>
+                  </td>
+                  <td>
+                    <% if (s.citas_afectadas > 0) { %>
+                      <span style="color: var(--admin-accent-dark); font-weight: 700; background: var(--admin-accent-light); padding: 2px 8px; border-radius: 4px; font-size: 12px;">
+                        <%= s.citas_afectadas %> citas
+                      </span>
+                    <% } else { %>
+                      <span style="color: var(--admin-muted); font-size: 12px;">Ninguna</span>
+                    <% } %>
+                  </td>
+                  <td>
+                    <span class="status-badge <%= s.estado %>">
+                      <%= s.estado %>
+                    </span>
+                  </td>
+                  <td style="text-align: right;">
+                    <% if (s.estado === 'pendiente') { %>
+                      <!-- Approve Form -->
+                      <form action="/admin/solicitudes-bloqueo/<%= s.id_bloqueo %>/aprobar" method="POST" style="display:inline">
+                        <button type="submit" class="table-action-btn">
+                          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 2px;">
+                            <polyline points="20 6 9 17 4 12"/>
+                          </svg>
+                          Aprobar
+                        </button>
+                      </form>
+
+                      <!-- Reject Form -->
+                      <form action="/admin/solicitudes-bloqueo/<%= s.id_bloqueo %>/rechazar" method="POST"
+                            style="display:inline"
+                            onsubmit="return confirm('¿Seguro que deseas rechazar esta solicitud de bloqueo?');">
+                        <button type="submit" class="table-action-btn eliminar">
+                          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 2px;">
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                          </svg>
+                          Rechazar
+                        </button>
+                      </form>
+                    <% } else { %>
+                      <span style="color: var(--admin-muted); font-size: 12px;">-</span>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }) %>
+              <% if (solicitudes.length === 0) { %>
+                <tr>
+                  <td colspan="7" style="text-align: center; color: var(--admin-muted); padding: 30px;">
+                    No hay solicitudes de bloqueo pendientes ni archivadas.
+                  </td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   </div>
 </body>
 </html>

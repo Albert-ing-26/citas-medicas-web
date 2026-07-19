@@ -1,0 +1,84 @@
+<aside class="admin-sidebar">
+  <div class="sidebar-brand">
+    <!-- Clinical SVG Logo -->
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M19 10.5h-5.5V5c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v5.5H5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5h5.5V19c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-5.5H19c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5z"/>
+    </svg>
+    <span>MediAdmin</span>
+  </div>
+
+  <div class="sidebar-nav">
+    <a href="/admin" class="sidebar-link <%= activePage === 'inicio' ? 'active' : '' %>">
+      <!-- Icon Dashboard -->
+      <svg viewBox="0 0 24 24">
+        <rect x="3" y="3" width="7" height="9" rx="1"/>
+        <rect x="14" y="3" width="7" height="5" rx="1"/>
+        <rect x="14" y="12" width="7" height="9" rx="1"/>
+        <rect x="3" y="16" width="7" height="5" rx="1"/>
+      </svg>
+      Inicio
+    </a>
+    
+    <a href="/admin/especialidades" class="sidebar-link <%= activePage === 'especialidades' ? 'active' : '' %>">
+      <!-- Icon Specialties -->
+      <svg viewBox="0 0 24 24">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        <path d="M9 12l2 2 4-4"/>
+      </svg>
+      Especialidades
+    </a>
+
+    <a href="/admin/medicos" class="sidebar-link <%= activePage === 'medicos' ? 'active' : '' %>">
+      <!-- Icon Doctors -->
+      <svg viewBox="0 0 24 24">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+      Médicos
+    </a>
+
+    <a href="/admin/pacientes" class="sidebar-link <%= activePage === 'pacientes' ? 'active' : '' %>">
+      <!-- Icon Patients -->
+      <svg viewBox="0 0 24 24">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+      </svg>
+      Pacientes
+    </a>
+
+    <a href="/admin/solicitudes-bloqueo" class="sidebar-link <%= activePage === 'solicitudes' ? 'active' : '' %>">
+      <!-- Icon Requests -->
+      <svg viewBox="0 0 24 24">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+        <line x1="16" y1="2" x2="16" y2="6"/>
+        <line x1="8" y1="2" x2="8" y2="6"/>
+        <line x1="3" y1="10" x2="21" y2="10"/>
+      </svg>
+      Solicitudes
+    </a>
+
+    <a href="/admin/reportes" class="sidebar-link <%= activePage === 'reportes' ? 'active' : '' %>">
+      <!-- Icon Reports -->
+      <svg viewBox="0 0 24 24">
+        <line x1="18" y1="20" x2="18" y2="10"/>
+        <line x1="12" y1="20" x2="12" y2="4"/>
+        <line x1="6" y1="20" x2="6" y2="14"/>
+      </svg>
+      Reportes
+    </a>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="sidebar-user-avatar" title="<%= usuario.nombre %>">
+        <%= usuario.nombre.charAt(0).toUpperCase() %>
+      </div>
+      <div class="sidebar-user-info">
+        <span class="sidebar-user-name"><%= usuario.nombre %></span>
+        <span class="sidebar-user-role">Administrador</span>
+      </div>
+    </div>
+  </div>
+</aside>
