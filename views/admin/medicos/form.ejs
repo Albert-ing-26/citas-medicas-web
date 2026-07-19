@@ -2,73 +2,113 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title><%= medico && medico.id_medico ? 'Editar' : 'Nuevo' %> medico</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= medico && medico.id_medico ? 'Editar' : 'Nuevo' %> Médico - Panel Administrador</title>
   <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/admin.css">
 </head>
-<body>
-  <h1>Bienvenido, <%= usuario.nombre %> (Administrador)</h1>
-  <nav>
-    <a href="/admin">Inicio</a> |
-    <a href="/admin/especialidades">Especialidades</a> |
-    <a href="/admin/medicos">Medicos</a> |
-    <a href="/admin/pacientes">Pacientes</a> |
-    <a href="/admin/solicitudes-bloqueo">Solicitudes</a> |
-    <a href="/admin/reportes">Reportes</a>
-  </nav>
-  <%- include('../../partials/perfil-widget') %>
+<body class="admin-body">
+  <div class="admin-container">
+    <!-- Sidebar Navigation -->
+    <%- include('../../partials/admin-sidebar', { activePage: 'medicos' }) %>
 
-  <div class="contenido">
-    <h2><%= medico && medico.id_medico ? 'Editar medico' : 'Nuevo medico' %></h2>
+    <div class="admin-main">
+      <!-- Top Header -->
+      <%- include('../../partials/admin-header', { title: medico && medico.id_medico ? 'Editar Médico' : 'Nuevo Médico' }) %>
 
-    <% if (error) { %>
-      <p class="error"><%= error %></p>
-    <% } %>
+      <div class="admin-content">
+        <!-- Back Link -->
+        <div style="margin-bottom: 24px;">
+          <a href="/admin/medicos" style="display: inline-flex; align-items: center; gap: 6px; color: var(--admin-primary); font-weight: 600; text-decoration: none; font-size: 14px;">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="19" y1="12" x2="5" y2="12"/>
+              <polyline points="12 19 5 12 12 5"/>
+            </svg>
+            Volver al listado
+          </a>
+        </div>
 
-    <form class="formulario"
-          action="<%= medico && medico.id_medico
-              ? '/admin/medicos/' + medico.id_medico + '/editar'
-              : '/admin/medicos/nuevo' %>"
-          method="POST">
+        <!-- Form Card -->
+        <div class="form-card">
+          <!-- Error Alert -->
+          <% if (error) { %>
+            <div class="alert alert-danger"><%= error %></div>
+          <% } %>
 
-      <label for="nombre">Nombre</label>
-      <input type="text" id="nombre" name="nombre" required
-             value="<%= medico ? medico.nombre : '' %>">
+          <form class="admin-form"
+                action="<%= medico && medico.id_medico
+                    ? '/admin/medicos/' + medico.id_medico + '/editar'
+                    : '/admin/medicos/nuevo' %>"
+                method="POST">
 
-      <label for="apellidos">Apellidos</label>
-      <input type="text" id="apellidos" name="apellidos" required
-             value="<%= medico ? medico.apellidos : '' %>">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+              <div class="form-group">
+                <label for="nombre">Nombre</label>
+                <input type="text" id="nombre" name="nombre" class="form-control" placeholder="Ej. Juan" required
+                       value="<%= medico ? medico.nombre : '' %>">
+              </div>
 
-      <label for="correo">Correo</label>
-      <input type="email" id="correo" name="correo" required
-             value="<%= medico ? medico.correo : '' %>">
+              <div class="form-group">
+                <label for="apellidos">Apellidos</label>
+                <input type="text" id="apellidos" name="apellidos" class="form-control" placeholder="Ej. Pérez..." required
+                       value="<%= medico ? medico.apellidos : '' %>">
+              </div>
+            </div>
 
-      <label for="telefono">Telefono</label>
-      <input type="text" id="telefono" name="telefono"
-             value="<%= medico ? medico.telefono : '' %>">
+            <div class="form-group">
+              <label for="correo">Correo Electrónico</label>
+              <input type="email" id="correo" name="correo" class="form-control" placeholder="juan.perez@clinica.com" required
+                     value="<%= medico ? medico.correo : '' %>">
+            </div>
 
-      <label for="id_especialidad">Especialidad</label>
-      <select id="id_especialidad" name="id_especialidad" required>
-        <% especialidades.forEach(e => { %>
-          <option value="<%= e.id_especialidad %>"
-            <%= medico && medico.id_especialidad == e.id_especialidad ? 'selected' : '' %>>
-            <%= e.nombre %>
-          </option>
-        <% }) %>
-      </select>
+            <div class="form-group">
+              <label for="telefono">Teléfono de Contacto</label>
+              <input type="text" id="telefono" name="telefono" class="form-control" placeholder="Ej. 987654321"
+                     value="<%= medico ? medico.telefono : '' %>">
+            </div>
 
-      <label for="colegiatura">Numero de colegiatura</label>
-      <input type="text" id="colegiatura" name="colegiatura" required
-             value="<%= medico ? medico.colegiatura : '' %>">
+            <div class="form-group">
+              <label for="id_especialidad">Especialidad Asignada</label>
+              <select id="id_especialidad" name="id_especialidad" class="form-control" required style="height: auto;">
+                <option value="" disabled <%= !medico ? 'selected' : '' %>>Seleccione una especialidad...</option>
+                <% especialidades.forEach(e => { %>
+                  <option value="<%= e.id_especialidad %>"
+                    <%= medico && medico.id_especialidad == e.id_especialidad ? 'selected' : '' %>>
+                    <%= e.nombre %>
+                  </option>
+                <% }) %>
+              </select>
+            </div>
 
-      <label for="password">
-        <%= medico && medico.id_medico ? 'Nueva contrasena (dejar vacio para no cambiarla)' : 'Contrasena' %>
-      </label>
-      <input type="password" id="password" name="password"
-             <%= medico && medico.id_medico ? '' : 'required' %>>
+            <div class="form-group">
+              <label for="colegiatura">Número de Colegiatura (CMP)</label>
+              <input type="text" id="colegiatura" name="colegiatura" class="form-control" placeholder="CMP-XXXXXX" required
+                     value="<%= medico ? medico.colegiatura : '' %>">
+            </div>
 
-      <button type="submit">Guardar</button>
-      <a href="/admin/medicos" class="cancelar">Cancelar</a>
-    </form>
+            <div class="form-group">
+              <label for="password">
+                <%= medico && medico.id_medico ? 'Contraseña (dejar vacío para no cambiarla)' : 'Contraseña de Acceso' %>
+              </label>
+              <input type="password" id="password" name="password" class="form-control" placeholder="<%= medico && medico.id_medico ? '••••••••' : 'Ingrese contraseña' %>"
+                     <%= medico && medico.id_medico ? '' : 'required' %>>
+            </div>
+
+            <div class="form-actions">
+              <a href="/admin/medicos" class="btn btn-secondary">Cancelar</a>
+              <button type="submit" class="btn btn-primary">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 4px;">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                  <polyline points="17 21 17 13 7 13 7 21"/>
+                  <polyline points="7 3 7 8 15 8"/>
+                </svg>
+                Guardar Médico
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
   </div>
 </body>
 </html>

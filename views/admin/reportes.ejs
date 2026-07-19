@@ -2,110 +2,230 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Reportes - Panel Administrador</title>
   <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/admin.css">
 </head>
-<body>
-  <h1>Bienvenido, <%= usuario.nombre %> (Administrador)</h1>
-  <nav>
-    <a href="/admin">Inicio</a> |
-    <a href="/admin/especialidades">Especialidades</a> |
-    <a href="/admin/medicos">Medicos</a> |
-    <a href="/admin/pacientes">Pacientes</a> |
-    <a href="/admin/solicitudes-bloqueo">Solicitudes</a> |
-    <a href="/admin/reportes">Reportes</a>
-  </nav>
-  <%- include('../partials/perfil-widget') %>
+<body class="admin-body">
+  <div class="admin-container">
+    <!-- Sidebar Navigation -->
+    <%- include('../partials/admin-sidebar', { activePage: 'reportes' }) %>
 
-  <div class="contenido">
-    <h2>Reportes de citas</h2>
+    <div class="admin-main">
+      <!-- Top Header -->
+      <%- include('../partials/admin-header', { title: 'Reportes y Estadísticas de Citas' }) %>
 
-    <form class="filtro-fechas" method="GET" action="/admin/reportes">
-      <div>
-        <label for="fecha_desde">Desde</label>
-        <input type="date" id="fecha_desde" name="fecha_desde" value="<%= fechaDesde %>">
-      </div>
-      <div>
-        <label for="fecha_hasta">Hasta</label>
-        <input type="date" id="fecha_hasta" name="fecha_hasta" value="<%= fechaHasta %>">
-      </div>
-      <button type="submit">Filtrar</button>
-      <a href="/admin/reportes" class="cancelar" style="align-self:center;">Ver todo</a>
-    </form>
-
-    <% if (totalCitas === 0) { %>
-      <p class="nota">No hay citas registradas en ese rango de fechas.</p>
-    <% } else { %>
-
-      <div class="tarjetas-resumen">
-        <div class="tarjeta">
-          <div class="numero"><%= totalCitas %></div>
-          <div class="etiqueta">Total de citas</div>
-        </div>
-        <% ['pendiente', 'confirmada', 'atendida', 'cancelada'].forEach(estado => { %>
-          <div class="tarjeta">
-            <div class="numero"><%= conteoEstados[estado] %></div>
-            <div class="etiqueta"><%= estado.charAt(0).toUpperCase() + estado.slice(1) %></div>
+      <div class="admin-content">
+        <!-- Date Filters -->
+        <form class="filter-bar" method="GET" action="/admin/reportes">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="fecha_desde">Desde la fecha</label>
+            <input type="date" id="fecha_desde" name="fecha_desde" class="form-control" value="<%= fechaDesde %>" style="padding: 10px 14px;">
           </div>
-        <% }) %>
-      </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="fecha_hasta">Hasta la fecha</label>
+            <input type="date" id="fecha_hasta" name="fecha_hasta" class="form-control" value="<%= fechaHasta %>" style="padding: 10px 14px;">
+          </div>
+          <div style="display: flex; gap: 10px; flex-shrink: 0; align-items: center; margin-top: 10px;">
+            <button type="submit" class="btn btn-primary" style="padding: 10px 20px;">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 4px;">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              Filtrar
+            </button>
+            <a href="/admin/reportes" class="btn btn-secondary" style="padding: 10px 20px; font-weight: 500;">
+              Ver Todo
+            </a>
+          </div>
+        </form>
 
-      <h3>Citas por estado</h3>
-      <table class="tabla" style="margin-bottom:32px;">
-        <thead>
-          <tr><th>Estado</th><th>Total</th><th style="width:40%;">Proporcion</th></tr>
-        </thead>
-        <tbody>
-          <% ['pendiente', 'confirmada', 'atendida', 'cancelada'].forEach(estado => { %>
-            <tr>
-              <td><%= estado.charAt(0).toUpperCase() + estado.slice(1) %></td>
-              <td><%= conteoEstados[estado] %></td>
-              <td>
-                <div class="barra-fondo">
-                  <div class="barra-relleno" style="width: <%= Math.round(conteoEstados[estado] / totalCitas * 100) %>%;"></div>
+        <% if (totalCitas === 0) { %>
+          <div class="alert alert-info">
+            <span style="font-weight: 600;">Sin resultados:</span> No hay citas registradas en el rango de fechas seleccionado.
+          </div>
+        <% } else { %>
+
+          <!-- Summary Stats Grid -->
+          <div class="admin-stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon" style="background: var(--admin-primary-light); color: var(--admin-primary);">
+                <svg viewBox="0 0 24 24">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                </svg>
+              </div>
+              <div class="stat-details">
+                <div class="stat-number"><%= totalCitas %></div>
+                <div class="stat-label">Total citas</div>
+              </div>
+            </div>
+
+            <% ['pendiente', 'confirmada', 'atendida', 'cancelada'].forEach(estado => { %>
+              <div class="stat-card">
+                <div class="stat-icon" style="
+                  <% if (estado === 'atendida') { %>
+                    background: #e7f7ee; color: #1e9e63;
+                  <% } else if (estado === 'pendiente') { %>
+                    background: #fdf1de; color: #d98c1f;
+                  <% } else if (estado === 'confirmada') { %>
+                    background: #e5f3f2; color: #0d7377;
+                  <% } else { %>
+                    background: #fdeceb; color: #e0453f;
+                  <% } %>
+                ">
+                  <!-- Dynamic icon per status -->
+                  <svg viewBox="0 0 24 24">
+                    <% if (estado === 'atendida') { %>
+                      <polyline points="20 6 9 17 4 12"/>
+                    <% } else if (estado === 'pendiente') { %>
+                      <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                    <% } else if (estado === 'confirmada') { %>
+                      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+                    <% } else { %>
+                      <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+                    <% } %>
+                  </svg>
                 </div>
-              </td>
-            </tr>
-          <% }) %>
-        </tbody>
-      </table>
+                <div class="stat-details">
+                  <div class="stat-number"><%= conteoEstados[estado] %></div>
+                  <div class="stat-label" style="text-transform: capitalize;"><%= estado %>s</div>
+                </div>
+              </div>
+            <% }) %>
+          </div>
 
-      <h3>Citas por especialidad</h3>
-      <table class="tabla" style="margin-bottom:32px;">
-        <thead>
-          <tr><th>Especialidad</th><th>Total</th><th>Atendidas</th><th>Canceladas</th></tr>
-        </thead>
-        <tbody>
-          <% porEspecialidad.forEach(fila => { %>
-            <tr>
-              <td><%= fila.especialidad %></td>
-              <td><%= fila.total %></td>
-              <td><%= fila.atendidas %></td>
-              <td><%= fila.canceladas %></td>
-            </tr>
-          <% }) %>
-        </tbody>
-      </table>
+          <!-- Appointments by Status Table -->
+          <div class="table-container">
+            <div class="table-header-bar">
+              <h3>Distribución de Citas por Estado</h3>
+              <span style="font-size: 12px; color: var(--admin-muted); font-weight: 500;">Proporción sobre el total</span>
+            </div>
 
-      <h3>Citas por medico</h3>
-      <table class="tabla">
-        <thead>
-          <tr><th>Medico</th><th>Especialidad</th><th>Total</th><th>Atendidas</th><th>Canceladas</th></tr>
-        </thead>
-        <tbody>
-          <% porMedico.forEach(fila => { %>
-            <tr>
-              <td>Dr(a). <%= fila.nombre %> <%= fila.apellidos %></td>
-              <td><%= fila.especialidad %></td>
-              <td><%= fila.total %></td>
-              <td><%= fila.atendidas %></td>
-              <td><%= fila.canceladas %></td>
-            </tr>
-          <% }) %>
-        </tbody>
-      </table>
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th style="width: 25%;">Estado</th>
+                  <th style="width: 20%;">Total</th>
+                  <th>Proporción / Progreso</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% ['pendiente', 'confirmada', 'atendida', 'cancelada'].forEach(estado => { 
+                   const porc = totalCitas > 0 ? Math.round(conteoEstados[estado] / totalCitas * 100) : 0;
+                %>
+                  <tr>
+                    <td>
+                      <span class="status-badge <%= estado %>" style="text-transform: capitalize;">
+                        <%= estado %>
+                      </span>
+                    </td>
+                    <td style="font-weight: 600;"><%= conteoEstados[estado] %></td>
+                    <td>
+                      <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
+                        <div class="progress-bar-container" style="flex-grow: 1;">
+                          <div class="progress-bar-fill" style="width: <%= porc %>%; 
+                            <% if (estado === 'atendida') { %>
+                              background-color: #1e9e63;
+                            <% } else if (estado === 'pendiente') { %>
+                              background-color: #d98c1f;
+                            <% } else if (estado === 'confirmada') { %>
+                              background-color: #0d7377;
+                            <% } else { %>
+                              background-color: #e0453f;
+                            <% } %>
+                          "></div>
+                        </div>
+                        <span style="font-size: 12px; font-weight: 600; color: var(--admin-muted); min-width: 32px; text-align: right;"><%= porc %>%</span>
+                      </div>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
 
-    <% } %>
+          <!-- Appointments by Specialty Table -->
+          <div class="table-container">
+            <div class="table-header-bar">
+              <h3>Citas Consolidadas por Especialidad</h3>
+            </div>
+
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Especialidad</th>
+                  <th>Total de Citas</th>
+                  <th>Atendidas</th>
+                  <th>Canceladas</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% porEspecialidad.forEach(fila => { %>
+                  <tr>
+                    <td style="font-weight: 600;"><%= fila.especialidad %></td>
+                    <td style="font-weight: 600; color: var(--admin-primary);"><%= fila.total %></td>
+                    <td>
+                      <span style="color: #1e9e63; font-weight: 600;"><%= fila.atendidas %></span>
+                    </td>
+                    <td>
+                      <span style="color: #e0453f; font-weight: 600;"><%= fila.canceladas %></span>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Appointments by Doctor Table -->
+          <div class="table-container">
+            <div class="table-header-bar">
+              <h3>Citas Consolidadas por Médico</h3>
+            </div>
+
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Médico</th>
+                  <th>Especialidad</th>
+                  <th>Total Citas</th>
+                  <th>Atendidas</th>
+                  <th>Canceladas</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% porMedico.forEach(fila => { %>
+                  <tr>
+                    <td>
+                      <div style="display: flex; align-items: center; gap: 8px;">
+                        <div style="width: 28px; height: 28px; border-radius: 50%; background: var(--admin-primary-light); color: var(--admin-primary); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 11px;">
+                          <%= fila.nombre.charAt(0).toUpperCase() %>
+                        </div>
+                        <span style="font-weight: 600;">Dr(a). <%= fila.nombre %> <%= fila.apellidos %></span>
+                      </div>
+                    </td>
+                    <td>
+                      <span style="background: var(--admin-primary-light); color: var(--admin-primary-dark); font-weight: 600; font-size: 12px; padding: 4px 10px; border-radius: 6px;">
+                        <%= fila.especialidad %>
+                      </span>
+                    </td>
+                    <td style="font-weight: 600; color: var(--admin-primary);"><%= fila.total %></td>
+                    <td>
+                      <span style="color: #1e9e63; font-weight: 600;"><%= fila.atendidas %></span>
+                    </td>
+                    <td>
+                      <span style="color: #e0453f; font-weight: 600;"><%= fila.canceladas %></span>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+
+        <% } %>
+      </div>
+    </div>
   </div>
 </body>
 </html>

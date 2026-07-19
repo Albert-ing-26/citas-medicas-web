@@ -2,71 +2,116 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pacientes - Panel Administrador</title>
   <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/admin.css">
 </head>
-<body>
-  <h1>Bienvenido, <%= usuario.nombre %> (Administrador)</h1>
-  <nav>
-    <a href="/admin">Inicio</a> |
-    <a href="/admin/especialidades">Especialidades</a> |
-    <a href="/admin/medicos">Medicos</a> |
-    <a href="/admin/pacientes">Pacientes</a> |
-    <a href="/admin/solicitudes-bloqueo">Solicitudes</a> |
-    <a href="/admin/reportes">Reportes</a>
-  </nav>
-  <%- include('../../partials/perfil-widget') %>
+<body class="admin-body">
+  <div class="admin-container">
+    <!-- Sidebar Navigation -->
+    <%- include('../../partials/admin-sidebar', { activePage: 'pacientes' }) %>
 
-  <div class="contenido">
-    <h2>Pacientes</h2>
-    <p class="nota">Los pacientes se registran ellos mismos. Aqui solo puedes verlos, bloquear su acceso o eliminar su cuenta.</p>
+    <div class="admin-main">
+      <!-- Top Header -->
+      <%- include('../../partials/admin-header', { title: 'Gestión de Pacientes' }) %>
 
-    <% if (error) { %>
-      <p class="error"><%= error %></p>
-    <% } %>
-
-    <table class="tabla">
-      <thead>
-        <tr>
-          <th>Nombre</th>
-          <th>DNI</th>
-          <th>Correo</th>
-          <th>Telefono</th>
-          <th>Estado</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% pacientes.forEach(p => { %>
-          <tr>
-            <td><%= p.nombre %> <%= p.apellidos %></td>
-            <td><%= p.dni %></td>
-            <td><%= p.correo %></td>
-            <td><%= p.telefono || '-' %></td>
-            <td>
-              <span class="<%= p.activo ? 'estado-activo' : 'estado-bloqueado' %>">
-                <%= p.activo ? 'Activo' : 'Bloqueado' %>
-              </span>
-            </td>
-            <td>
-              <form action="/admin/pacientes/<%= p.id_paciente %>/bloquear" method="POST" style="display:inline">
-                <button type="submit" class="link-accion">
-                  <%= p.activo ? 'Bloquear' : 'Reactivar' %>
-                </button>
-              </form>
-              <form action="/admin/pacientes/<%= p.id_paciente %>/eliminar" method="POST"
-                    style="display:inline"
-                    onsubmit="return confirm('Seguro que deseas eliminar la cuenta de este paciente? Esta accion no se puede deshacer.');">
-                <button type="submit" class="link-eliminar">Eliminar</button>
-              </form>
-            </td>
-          </tr>
-        <% }) %>
-        <% if (pacientes.length === 0) { %>
-          <tr><td colspan="6">Todavia no hay pacientes registrados.</td></tr>
+      <div class="admin-content">
+        <!-- Error Alert -->
+        <% if (error) { %>
+          <div class="alert alert-danger"><%= error %></div>
         <% } %>
-      </tbody>
-    </table>
+
+        <div style="margin-bottom: 24px;">
+          <p style="color: var(--admin-muted); font-size: 14px; margin: 0;">
+            Los pacientes se registran de manera autónoma. Desde esta sección puedes supervisar sus datos, suspender (bloquear) temporalmente su acceso o eliminar definitivamente sus cuentas.
+          </p>
+        </div>
+
+        <!-- Patients Table -->
+        <div class="table-container">
+          <div class="table-header-bar">
+            <h3>Pacientes Registrados</h3>
+            <span style="font-size: 12px; color: var(--admin-muted); font-weight: 500;"><%= pacientes.length %> pacientes en base de datos</span>
+          </div>
+
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Paciente</th>
+                <th>DNI</th>
+                <th>Correo</th>
+                <th>Teléfono</th>
+                <th>Estado</th>
+                <th style="text-align: right;">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% pacientes.forEach(p => { %>
+                <tr>
+                  <td>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                      <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--admin-primary-light); color: var(--admin-primary); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 12px;">
+                        <%= p.nombre.charAt(0).toUpperCase() %>
+                      </div>
+                      <div style="font-weight: 600;"><%= p.nombre %> <%= p.apellidos %></div>
+                    </div>
+                  </td>
+                  <td style="font-family: var(--font-mono); font-size: 13px;"><%= p.dni %></td>
+                  <td><%= p.correo %></td>
+                  <td><%= p.telefono || '-' %></td>
+                  <td>
+                    <span class="status-badge <%= p.activo ? 'activo' : 'bloqueado' %>">
+                      <%= p.activo ? 'activo' : 'bloqueado' %>
+                    </span>
+                  </td>
+                  <td style="text-align: right;">
+                    <!-- Block/Unblock Form Button -->
+                    <form action="/admin/pacientes/<%= p.id_paciente %>/bloquear" method="POST" style="display:inline">
+                      <button type="submit" class="table-action-btn">
+                        <% if (p.activo) { %>
+                          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 2px;">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                          </svg>
+                          Bloquear
+                        <% } else { %>
+                          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 2px;">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                            <path d="M7 11V7a5 5 0 0 1 9.9-1"/>
+                          </svg>
+                          Reactivar
+                        <% } %>
+                      </button>
+                    </form>
+
+                    <!-- Delete Form Button -->
+                    <form action="/admin/pacientes/<%= p.id_paciente %>/eliminar" method="POST"
+                          style="display:inline"
+                          onsubmit="return confirm('¿Seguro que deseas eliminar la cuenta de este paciente? Esta acción no se puede deshacer y borrará su historial.');">
+                      <button type="submit" class="table-action-btn eliminar">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 2px;">
+                          <polyline points="3 6 5 6 21 6"/>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        </svg>
+                        Eliminar
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              <% }) %>
+              <% if (pacientes.length === 0) { %>
+                <tr>
+                  <td colspan="6" style="text-align: center; color: var(--admin-muted); padding: 30px;">
+                    Todavía no hay pacientes registrados.
+                  </td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   </div>
 </body>
 </html>
