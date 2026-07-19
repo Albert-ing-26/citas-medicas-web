@@ -1957,3 +1957,77 @@ body.pagina-login {
 .action-circle .descripcion, .action-circle .flecha {
   display: none;
 }
+
+/* ---------------------------------------------------------
+   DISEÑO EXACTO: TARJETAS DE ACCION (COMO IMAGEN)
+   --------------------------------------------------------- */
+
+.grid-acciones-nuevas {
+  display: flex;
+  gap: 24px;
+  justify-content: flex-start;
+  margin-top: 24px;
+}
+
+.tarjeta-accion-nueva {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 32px 24px;
+  width: 300px;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid #f1f5f4;
+}
+
+.tarjeta-accion-nueva:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+}
+
+.icono-contenedor {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  background: #e9f0ee; /* Menta/teal muy claro */
+  border-radius: 20px;
+  margin-bottom: 20px;
+  color: #0d3b32; /* Verde muy oscuro */
+}
+
+.icono-contenedor svg {
+  width: 34px;
+  height: 34px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+}
+
+.tarjeta-accion-nueva .titulo {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 700;
+  color: #0d3b32;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.tarjeta-accion-nueva .descripcion {
+  font-size: 13px;
+  color: #5e7770;
+  text-align: center;
+  line-height: 1.5;
+  margin-bottom: 24px;
+}
+
+.tarjeta-accion-nueva .flecha {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0d3b32;
+}
