@@ -10,6 +10,7 @@ const adminRoutes = require('./routes/admin');
 const medicoRoutes = require('./routes/medico');
 const pacienteRoutes = require('./routes/paciente');
 const perfilRoutes = require('./routes/perfil');
+const chatRoutes = require('./routes/chat');
 const { requireLogin } = require('./middlewares/auth');
 
 const app = express();
@@ -77,6 +78,7 @@ app.use('/perfil', requireLogin, perfilRoutes);
 app.use('/admin', requireLogin, adminRoutes);
 app.use('/medico', requireLogin, medicoRoutes);
 app.use('/paciente', requireLogin, pacienteRoutes);
+app.use('/api', chatRoutes);
 
 app.use((req, res) => {
   res.status(404).render('404');

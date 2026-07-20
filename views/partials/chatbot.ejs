@@ -1,3 +1,35 @@
+<style>
+  .typing-indicator {
+    display: flex !important;
+    align-items: center;
+    gap: 4px;
+    width: auto;
+    max-width: 60px;
+    padding: 10px 15px;
+    justify-content: center;
+  }
+  .typing-indicator span {
+    width: 6px;
+    height: 6px;
+    background-color: #0f766e;
+    border-radius: 50%;
+    display: inline-block;
+    animation: typing-bounce 1.4s infinite ease-in-out both;
+  }
+  .typing-indicator span:nth-child(1) {
+    animation-delay: -0.32s;
+  }
+  .typing-indicator span:nth-child(2) {
+    animation-delay: -0.16s;
+  }
+  @keyframes typing-bounce {
+    0%, 80%, 100% { 
+      transform: scale(0);
+    } 40% { 
+      transform: scale(1.0);
+    }
+  }
+</style>
 <div class="chatbot-shell" id="chatbot-shell">
   <div class="chatbox-window" id="chatbox-window" aria-live="polite">
     <div class="chatbox-header">
@@ -63,58 +95,46 @@
   if (window.__jaxChatbotInitialized) return;
   window.__jaxChatbotInitialized = true;
 
-  const contextMap = {
-    login: {
-      welcome: '¡Hola, soy Jax! Ingresa tus credenciales aquí para acceder de forma segura a tu cuenta médica.',
-      quickActions: ['Ingresar', 'Registrarme', 'Ayuda rápida']
-    },
-    paciente: {
-      welcome: '¡Hola! Bienvenido a tu portal. Aquí puedes agendar tus citas o revisar las que ya tienes programadas.',
-      quickActions: ['Reservar cita', 'Ver historial', 'Cancelar cita']
-    },
-    medico: {
-      welcome: '¡Hola! Estoy aquí para ayudarte a revisar tu agenda y administrar tus turnos.',
-      quickActions: ['Ver agenda', 'Bloquear días', 'Confirmar citas']
-    },
-    admin: {
-      welcome: '¡Hola! En este panel puedes ver el resumen gráfico del estado de las citas, médicos y reportes de hoy.',
-      quickActions: ['Gestionar médicos', 'Ver solicitudes', 'Reportes']
-    }
+  // Datos del usuario inyectados desde la sesión en el servidor (EJS)
+  const JAX_USER = {
+    nombre: '<%= typeof usuario !== "undefined" && usuario && usuario.nombre ? usuario.nombre.split(" ")[0] : "" %>',
+    rol:    '<%= typeof usuario !== "undefined" && usuario && usuario.rol    ? usuario.rol    : "" %>'
   };
 
+  // Genera el saludo inicial estático (sin llamar a la API)
+  function generarSaludoInicial() {
+    const nombre = JAX_USER.nombre;
+    const rol    = JAX_USER.rol;
+    let titulo = '';
+    if (rol === 'admin')   titulo = 'Administrador';
+    else if (rol === 'medico') titulo = 'Doctor';
+    else if (nombre)       titulo = 'Paciente';
+
+    if (titulo && nombre) {
+      return `Hola, soy tu asistente virtual Jax, ¿en qué te puedo ayudar, ${titulo} ${nombre}?`;
+    }
+    return '¡Hola! Soy Jax, tu asistente virtual. ¿En qué puedo ayudarte hoy?';
+  }
+
+  // Acciones rápidas según el rol
+  function getQuickActions() {
+    const rol = JAX_USER.rol;
+    if (rol === 'admin')  return ['Gestionar médicos', 'Ver solicitudes', 'Reportes'];
+    if (rol === 'medico') return ['Ver agenda', 'Bloquear días', 'Confirmar citas'];
+    return ['Reservar cita', 'Ver historial', 'Cancelar cita'];
+  }
+
+  // Contexto para compatibilidad (solo se usa en acciones rápidas ahora)
   function getContext() {
-    const path = window.location.pathname || '/';
-    if (path === '/' || path === '/login' || path === '/registro') return contextMap.login;
-    if (path.startsWith('/paciente/dashboard')) return { ...contextMap.paciente, welcome: '¡Hola! Bienvenido a tu portal. Aquí puedes agendar tus citas o revisar las que ya tienes programadas.' };
-    if (path.startsWith('/paciente/reservar')) return { ...contextMap.paciente, welcome: '¡Hola! Selecciona la especialidad que necesitas, elige a tu doctor y programa tu cita en segundos.' };
-    if (path.startsWith('/paciente')) return contextMap.paciente;
-    if (path.startsWith('/medico')) return contextMap.medico;
-    if (path.startsWith('/admin/especialidades')) return { ...contextMap.admin, welcome: '¡Hola! Aquí puedes ver la lista de especialidades de la clínica, editarlas o añadir nuevas de forma rápida.' };
-    if (path.startsWith('/admin/medicos')) return { ...contextMap.admin, welcome: '¡Hola! Este es el registro del personal médico. Aquí puedes gestionar sus horarios, especialidades y datos de contacto.' };
-    if (path.startsWith('/admin')) return { ...contextMap.admin, welcome: '¡Hola! En este panel puedes ver el resumen gráfico del estado de las citas, médicos y reportes de hoy.' };
-    return contextMap.login;
+    return { quickActions: getQuickActions() };
   }
 
   const bubbleMessageMap = {
-    login: { message: '¡Hola, soy Jax! Ingresa tus credenciales aquí para acceder de forma segura.', duration: 5000 },
-    adminDashboard: { message: '¡Hola! En este panel puedes ver el resumen gráfico del estado de las citas, médicos y reportes de hoy.', duration: 7500 },
-    adminEspecialidades: { message: '¡Hola! Aquí puedes ver la lista de especialidades de la clínica, editarlas o añadir nuevas rápidamente.', duration: 7500 },
-    adminMedicos: { message: '¡Hola! Este es el registro médico. Aquí puedes gestionar horarios, especialidades y datos de contacto.', duration: 8000 },
-    pacienteDashboard: { message: '¡Hola! Bienvenido a tu portal. Aquí puedes agendar tus citas o revisar las programadas.', duration: 7000 },
-    pacienteReservar: { message: '¡Hola! Selecciona la especialidad que necesitas, elige a tu doctor y programa tu cita en segundos.', duration: 8000 }
+    default: { message: '¡Hola! Soy Jax, tu asistente virtual. ¿En qué puedo ayudarte?', duration: 5000 }
   };
 
   function getBubbleConfig() {
-    const path = window.location.pathname || '/';
-    if (path === '/login' || path === '/registro') return bubbleMessageMap.login;
-    if (path.startsWith('/admin/dashboard')) return bubbleMessageMap.adminDashboard;
-    if (path.startsWith('/admin/especialidades')) return bubbleMessageMap.adminEspecialidades;
-    if (path.startsWith('/admin/medicos')) return bubbleMessageMap.adminMedicos;
-    if (path.startsWith('/paciente/dashboard')) return bubbleMessageMap.pacienteDashboard;
-    if (path.startsWith('/paciente/reservar')) return bubbleMessageMap.pacienteReservar;
-    if (path.startsWith('/admin')) return bubbleMessageMap.adminDashboard;
-    if (path.startsWith('/paciente')) return bubbleMessageMap.pacienteDashboard;
-    return bubbleMessageMap.login;
+    return bubbleMessageMap.default;
   }
 
   function resetBubbleState() {
@@ -189,25 +209,81 @@
     messages.scrollTop = messages.scrollHeight;
   }
 
-  function getReply(action) {
-    const context = getContext();
-    const lower = action.toLowerCase();
-    if (lower.includes('registr')) return 'Puedes registrarte desde la opción de registro y luego reservar tus citas desde el panel de paciente.';
-    if (lower.includes('reserv')) return 'Dirígete a la sección Reservar cita y elige especialidad, médico, fecha y horario disponible.';
-    if (lower.includes('historial') || lower.includes('cita')) return 'En tu panel puedes revisar tus citas activas y el estado de cada una en un solo lugar.';
-    if (lower.includes('agenda')) return 'Tu agenda te permite ver turnos, confirmar pacientes y mantener el día organizado.';
-    if (lower.includes('bloque')) return 'Desde solicitudes de bloqueo puedes indicar los días en los que no atenderás.';
-    if (lower.includes('solicitud')) return 'Las solicitudes pendientes aparecen en el panel de administración para revisión rápida.';
-    if (lower.includes('reporte')) return 'Los reportes te ayudan a revisar la actividad general por estado, especialidad y médico.';
-    if (lower.includes('médico') || lower.includes('medico')) return 'Puedes gestionar médicos desde la sección dedicada y asignarles especialidades.';
-    return context.welcome;
+  function showTypingIndicator() {
+    const messages = document.getElementById('chatbox-messages');
+    if (!messages) return null;
+    const bubble = document.createElement('div');
+    bubble.className = 'chat-bubble chat-bubble-bot typing-indicator';
+    bubble.innerHTML = '<span></span><span></span><span></span>';
+    messages.appendChild(bubble);
+    messages.scrollTop = messages.scrollHeight;
+    return bubble;
+  }
+
+  async function fetchGeminiReply(userMessage) {
+    const typingIndicator = showTypingIndicator();
+
+    // Inferir el rol del usuario según la ruta actual
+    function getUserRole() {
+      const path = window.location.pathname || '/';
+      if (path.startsWith('/admin')) return 'admin';
+      if (path.startsWith('/medico')) return 'medico';
+      return 'paciente';
+    }
+    const userRole = getUserRole();
+    const userName = JAX_USER.nombre || '';
+    
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ message: userMessage, role: userRole, userName: userName })
+      });
+      
+      if (typingIndicator) {
+        typingIndicator.remove();
+      }
+      
+      let data = null;
+      try {
+        data = await response.json();
+      } catch (jsonErr) {
+        console.error('Error parsing response JSON:', jsonErr);
+      }
+
+      if (!response.ok) {
+        const errorMessage = (data && (data.error || data.reply)) ? (data.error || data.reply) : 'Lo siento, he experimentado una dificultad para responder en este momento. Por favor, intenta de nuevo.';
+        appendMessage(errorMessage, 'bot');
+      } else {
+        if (data && (data.response || data.reply)) {
+          appendMessage(data.response || data.reply, 'bot');
+        } else if (data && data.error) {
+          appendMessage(data.error, 'bot');
+        } else {
+          appendMessage('Lo siento, no he podido obtener una respuesta válida.', 'bot');
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching chat response:', error);
+      if (typingIndicator) {
+        typingIndicator.remove();
+      }
+      appendMessage('Lo siento, en este momento no puedo conectarme con el servicio de Jax. Por favor, intenta de nuevo más tarde.', 'bot');
+    }
+    
+    // Volver a renderizar las acciones rápidas correspondientes al contexto
+    renderQuickActions(getContext().quickActions);
   }
 
   function handleQuickReply(action) {
     appendMessage(action, 'user');
-    const reply = getReply(action);
-    setTimeout(() => appendMessage(reply, 'bot'), 250);
-    setTimeout(() => renderQuickActions(getContext().quickActions), 320);
+    // Limpiar las acciones rápidas mientras se responde
+    const actionsBox = document.getElementById('chatbox-actions');
+    if (actionsBox) actionsBox.innerHTML = '';
+    
+    fetchGeminiReply(action);
   }
 
   window.sendUserMessage = function () {
@@ -216,11 +292,12 @@
     if (!value) return;
     appendMessage(value, 'user');
     input.value = '';
-    const reply = value.toLowerCase().includes('ayuda')
-      ? 'Puedo ayudarte con acceso, reservas, agenda o reportes. Elige una opción rápida o escribe tu consulta.'
-      : 'Gracias por tu mensaje. Estoy aquí para orientarte paso a paso dentro de la plataforma.';
-    setTimeout(() => appendMessage(reply, 'bot'), 220);
-    setTimeout(() => renderQuickActions(getContext().quickActions), 320);
+    
+    // Limpiar las acciones rápidas mientras se responde
+    const actionsBox = document.getElementById('chatbox-actions');
+    if (actionsBox) actionsBox.innerHTML = '';
+    
+    fetchGeminiReply(value);
   };
 
   window.toggleChat = function () {
@@ -249,14 +326,34 @@
     const button = document.getElementById('jax-floating-button');
     if (!chatbox || !messages || !button) return;
 
-    const context = getContext();
-    renderQuickActions(context.quickActions);
-    appendMessage(context.welcome, 'bot');
-    showBubble();
+    // Saludo inicial estático basado en rol/nombre del usuario — SIN llamar a la API
+    renderQuickActions(getQuickActions());
+    appendMessage(generarSaludoInicial(), 'bot');
+
+    // Burbuja de pensamiento simplificada: siempre el saludo inicial
+    const bubble = document.getElementById('jax-thought-bubble');
+    const messageNode = document.getElementById('jax-bubble-message');
+    if (bubble && messageNode) {
+      messageNode.textContent = generarSaludoInicial();
+      requestAnimationFrame(() => {
+        bubble.classList.remove('is-hidden');
+        bubble.classList.add('is-visible');
+        bubble.setAttribute('aria-hidden', 'false');
+      });
+      window.jaxTimeoutId = setTimeout(() => {
+        bubble.classList.remove('is-visible');
+        bubble.classList.add('is-hidden');
+        bubble.setAttribute('aria-hidden', 'true');
+      }, 6000);
+    }
 
     button.addEventListener('click', function (event) {
       event.stopPropagation();
-      hideBubble();
+      if (bubble) {
+        bubble.classList.remove('is-visible');
+        bubble.classList.add('is-hidden');
+        bubble.setAttribute('aria-hidden', 'true');
+      }
       toggleChat();
     });
 
