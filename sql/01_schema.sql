@@ -111,3 +111,21 @@ CREATE TABLE citas (
 -- ---------------------------------------------------------
 CREATE INDEX idx_citas_paciente ON citas(id_paciente);
 CREATE INDEX idx_citas_medico_fecha ON citas(id_medico, fecha);
+
+-- ---------------------------------------------------------
+-- 8. DISPARADORES (TRIGGERS) DE SEGURIDAD
+-- ---------------------------------------------------------
+DELIMITER //
+CREATE TRIGGER bloquear_borrado_usuarios
+BEFORE DELETE ON usuarios
+FOR EACH ROW
+BEGIN
+    -- Bloquear si el usuario es paciente o médico
+    IF OLD.rol IN ('paciente', 'medico') THEN
+        SIGNAL SQLSTATE '45000' 
+        SET MESSAGE_TEXT = 'ERROR: Por seguridad de la clínica, no se permite eliminar médicos ni pacientes físicamente. Use la opción de bloquear.';
+    END IF;
+END;
+//
+DELIMITER ;
+
