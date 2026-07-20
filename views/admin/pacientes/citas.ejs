@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Citas del Paciente - Panel Administrador</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-body">
+  <div class="admin-container">
+    <!-- Sidebar Navigation -->
+    <%- include('../../partials/admin-sidebar', { activePage: 'pacientes' }) %>
+
+    <div class="admin-main">
+      <!-- Top Header -->
+      <%- include('../../partials/admin-header', { title: 'Historial de Citas' }) %>
+
+      <div class="admin-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+          <div>
+            <h2 style="margin: 0; font-size: 20px; color: var(--admin-ink);">
+              Paciente: <%= paciente.nombre %> <%= paciente.apellidos %>
+            </h2>
+            <p style="color: var(--admin-muted); font-size: 14px; margin: 4px 0 0 0;">
+              Documento Nacional de Identidad (DNI): <strong><%= paciente.dni %></strong>
+            </p>
+          </div>
+          <a class="table-action-btn" href="/admin/pacientes" style="display: flex; align-items: center; gap: 6px; font-weight: 600;">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="19" y1="12" x2="5" y2="12"/>
+              <polyline points="12 19 5 12 12 5"/>
+            </svg>
+            Volver a Pacientes
+          </a>
+        </div>
+
+        <!-- Appointments Table -->
+        <div class="table-container">
+          <div class="table-header-bar">
+            <h3>Citas Registradas</h3>
+            <span style="font-size: 12px; color: var(--admin-muted); font-weight: 500;"><%= citas.length %> citas en total</span>
+          </div>
+
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>ID Cita</th>
+                <th>Fecha</th>
+                <th>Horario</th>
+                <th>Médico</th>
+                <th>Especialidad</th>
+                <th>Motivo de Consulta</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% citas.forEach(c => { %>
+                <tr>
+                  <td style="font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--admin-muted);">
+                    #<%= c.id_cita %>
+                  </td>
+                  <td style="font-family: var(--font-mono); font-size: 13px;">
+                    <%= c.fecha.toISOString ? c.fecha.toISOString().substring(0,10) : c.fecha %>
+                  </td>
+                  <td>
+                    <%= c.hora_inicio.substring(0,5) %> - <%= c.hora_fin.substring(0,5) %>
+                  </td>
+                  <td>
+                    <div style="font-weight: 600;"><%= c.medico %></div>
+                  </td>
+                  <td>
+                    <span style="background: var(--admin-primary-light); color: var(--admin-primary-dark); font-weight: 600; font-size: 12px; padding: 4px 10px; border-radius: 6px;">
+                      <%= c.especialidad %>
+                    </span>
+                  </td>
+                  <td style="font-style: italic; color: var(--admin-muted);">
+                    <%= c.motivo_consulta %>
+                  </td>
+                  <td>
+                    <span class="status-badge <%= c.estado %>">
+                      <%= c.estado %>
+                    </span>
+                  </td>
+                </tr>
+              <% }) %>
+              <% if (citas.length === 0) { %>
+                <tr>
+                  <td colspan="7" style="text-align: center; color: var(--admin-muted); padding: 40px;">
+                    Este paciente no registra citas médicas en el sistema.
+                  </td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

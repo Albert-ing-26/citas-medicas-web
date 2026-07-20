@@ -255,16 +255,22 @@ router.get('/mis-citas', async (req, res) => {
 
 router.post('/mis-citas/:id/cancelar', async (req, res) => {
   try {
-    // Solo puede cancelar sus propias citas, y solo si estan pendientes o confirmadas
-    const [resultado] = await pool.query(
-      `UPDATE citas SET estado = 'cancelada'
-       WHERE id_cita = ? AND id_paciente = ? AND estado IN ('pendiente', 'confirmada')`,
+    // 1. Validar que la cita pertenece al paciente autenticado
+    const [citas] = await pool.query(
+      'SELECT 1 FROM citas WHERE id_cita = ? AND id_paciente = ?',
       [req.params.id, req.idPaciente]
     );
-    res.redirect(resultado.affectedRows > 0 ? '/paciente/mis-citas?ok=1' : '/paciente/mis-citas');
+    if (citas.length === 0) {
+      return res.status(403).send('No tienes permiso para cancelar esta cita');
+    }
+
+    // 2. Llamar al procedimiento almacenado spcancelarcita
+    await pool.query('CALL spcancelarcita(?)', [req.params.id]);
+    res.redirect('/paciente/mis-citas?ok=1');
   } catch (err) {
     console.error(err);
-    res.status(500).send('Error al cancelar la cita');
+    const mensaje = err.sqlMessage || 'Error al cancelar la cita';
+    res.status(400).send(mensaje);
   }
 });
 

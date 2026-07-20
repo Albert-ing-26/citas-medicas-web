@@ -472,7 +472,7 @@
   border: 1px solid var(--admin-border);
   border-radius: var(--admin-radius-md);
   box-shadow: var(--admin-shadow-sm);
-  overflow: hidden;
+  overflow-x: auto;
   margin-bottom: 30px;
 }
 
@@ -507,12 +507,12 @@
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  padding: 16px 24px;
+  padding: 14px 12px;
   border-bottom: 1px solid var(--admin-border);
 }
 
 .admin-table td {
-  padding: 18px 24px;
+  padding: 14px 12px;
   border-bottom: 1px solid var(--admin-border);
   font-size: 14px;
   color: var(--admin-ink);
@@ -569,12 +569,12 @@
 .table-action-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 13px;
+  gap: 4px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--admin-primary);
   text-decoration: none;
-  padding: 6px 12px;
+  padding: 5px 8px;
   border-radius: 6px;
   border: 1px solid transparent;
   transition: all 0.2s ease;

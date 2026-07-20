@@ -322,20 +322,23 @@ router.post('/medicos/:id/editar', async (req, res) => {
   }
 });
 
-// Eliminar un medico (borra el usuario, y por ON DELETE CASCADE se borra el perfil medico tambien)
-router.post('/medicos/:id/eliminar', async (req, res) => {
+// Bloquear o reactivar la cuenta de un medico (activo = FALSE le impide iniciar sesion)
+router.post('/medicos/:id/bloquear', async (req, res) => {
   try {
     const [rows] = await pool.query(
       'SELECT id_usuario FROM medicos WHERE id_medico = ?',
       [req.params.id]
     );
     if (rows.length > 0) {
-      await pool.query('DELETE FROM usuarios WHERE id_usuario = ?', [rows[0].id_usuario]);
+      await pool.query(
+        'UPDATE usuarios SET activo = NOT activo WHERE id_usuario = ?',
+        [rows[0].id_usuario]
+      );
     }
     res.redirect('/admin/medicos');
   } catch (err) {
     console.error(err);
-    res.status(500).send('No se pudo eliminar el medico (puede tener citas asociadas)');
+    res.status(500).send('Error al actualizar el estado del medico');
   }
 });
 
@@ -382,22 +385,37 @@ router.post('/pacientes/:id/bloquear', async (req, res) => {
   }
 });
 
-// Eliminar la cuenta de un paciente (borra el usuario, y por ON DELETE CASCADE se borra su perfil)
-router.post('/pacientes/:id/eliminar', async (req, res) => {
+// Ver citas de un paciente por DNI usando el procedimiento almacenado splistarcitaspaciente
+router.get('/pacientes/:id/citas', async (req, res) => {
   try {
-    const [rows] = await pool.query(
-      'SELECT id_usuario FROM pacientes WHERE id_paciente = ?',
+    const [pacienteRows] = await pool.query(
+      `SELECT p.dni, u.nombre, u.apellidos
+       FROM pacientes p
+       JOIN usuarios u ON u.id_usuario = p.id_usuario
+       WHERE p.id_paciente = ?`,
       [req.params.id]
     );
-    if (rows.length > 0) {
-      await pool.query('DELETE FROM usuarios WHERE id_usuario = ?', [rows[0].id_usuario]);
+
+    if (pacienteRows.length === 0) {
+      return res.status(404).send('Paciente no encontrado');
     }
-    res.redirect('/admin/pacientes');
+
+    const paciente = pacienteRows[0];
+
+    const [result] = await pool.query('CALL splistarcitaspaciente(?)', [paciente.dni]);
+    const citas = result[0];
+
+    res.render('admin/pacientes/citas', {
+      usuario: req.session.usuario,
+      paciente,
+      citas
+    });
   } catch (err) {
     console.error(err);
-    res.status(500).send('No se pudo eliminar el paciente (puede tener citas asociadas)');
+    res.status(500).send('Error al obtener las citas del paciente');
   }
 });
+
 
 // ------------------- REPORTES -------------------
 
@@ -405,15 +423,9 @@ router.get('/reportes', async (req, res) => {
   // Rango de fechas opcional; si no se especifica, se muestran todas las citas registradas
   const fechaDesde = req.query.fecha_desde || '1970-01-01';
   const fechaHasta = req.query.fecha_hasta || '2100-12-31';
-
   try {
-    const [porEstado] = await pool.query(
-      `SELECT estado, COUNT(*) AS total
-       FROM citas
-       WHERE fecha BETWEEN ? AND ?
-       GROUP BY estado`,
-      [fechaDesde, fechaHasta]
-    );
+    const [result] = await pool.query('CALL spreportecitasxestado(?, ?)', [fechaDesde, fechaHasta]);
+    const porEstado = result[0];
 
     const [porEspecialidad] = await pool.query(
       `SELECT e.nombre AS especialidad,
