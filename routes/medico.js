@@ -80,16 +80,28 @@ router.get('/agenda', async (req, res) => {
   const fecha = req.query.fecha || hoyISO();
 
   try {
+    const idUsuarioMedico = req.session.usuario?.id_usuario;
+
     const [citas] = await pool.query(`
-      SELECT c.id_cita, c.hora_inicio, c.hora_fin, c.motivo_consulta, c.estado,
-             u.nombre AS paciente_nombre, u.apellidos AS paciente_apellidos,
-             p.dni, u.telefono
+      SELECT
+        c.id_cita,
+        c.fecha,
+        c.hora_inicio,
+        c.hora_fin,
+        CONCAT(TIME_FORMAT(c.hora_inicio, '%H:%i'), ' - ', TIME_FORMAT(c.hora_fin, '%H:%i')) AS hora_rango,
+        c.motivo_consulta AS motivo,
+        c.estado,
+        u_pac.nombre AS nombre_paciente,
+        u_pac.apellidos AS apellidos_paciente,
+        p.dni AS dni_paciente,
+        u_pac.telefono AS telefono_paciente
       FROM citas c
-      JOIN pacientes p ON p.id_paciente = c.id_paciente
-      JOIN usuarios u ON u.id_usuario = p.id_usuario
-      WHERE c.id_medico = ? AND c.fecha = ?
-      ORDER BY c.hora_inicio
-    `, [req.idMedico, fecha]);
+      INNER JOIN medicos m ON m.id_medico = c.id_medico
+      INNER JOIN pacientes p ON p.id_paciente = c.id_paciente
+      INNER JOIN usuarios u_pac ON u_pac.id_usuario = p.id_usuario
+      WHERE m.id_usuario = ? AND c.fecha = ?
+      ORDER BY c.hora_inicio ASC, c.id_cita ASC
+    `, [idUsuarioMedico, fecha]);
 
     const [bloqueado] = await pool.query(
       "SELECT motivo, estado FROM dias_bloqueados WHERE id_medico = ? AND fecha = ? AND estado != 'rechazado'",

@@ -50,79 +50,97 @@
         <% } %>
 
         <!-- Agenda Table -->
-        <div class="table-container">
-          <div class="table-header-bar">
-            <h3>Citas Programadas para el <%= fecha %></h3>
-            <span style="font-size: 12px; color: var(--admin-muted); font-weight: 500;"><%= citas.length %> citas registradas</span>
+        <div class="table-container" style="background: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); padding: 24px;">
+          <div class="table-header-bar" style="margin-bottom: 20px;">
+            <h3 style="margin: 0; color: var(--admin-text); font-size: 1.25rem;">Citas Programadas</h3>
+            <span style="font-size: 13px; color: var(--admin-muted); font-weight: 500;"><%= citas.length %> citas registradas para el <%= fecha %></span>
           </div>
 
-          <table class="admin-table">
+          <table class="admin-table" style="width: 100%; border-collapse: collapse;">
             <thead>
-              <tr>
-                <th>Hora</th>
-                <th>Paciente</th>
-                <th>DNI</th>
-                <th>Teléfono</th>
-                <th>Motivo de Consulta</th>
-                <th>Estado</th>
-                <th style="text-align: right;">Acciones</th>
+              <tr style="border-bottom: 2px solid #f1f5f9; text-align: left;">
+                <th style="padding: 12px 16px; color: var(--admin-muted); font-weight: 600; font-size: 13px; text-transform: uppercase;">Hora / Rango</th>
+                <th style="padding: 12px 16px; color: var(--admin-muted); font-weight: 600; font-size: 13px; text-transform: uppercase;">Paciente</th>
+                <th style="padding: 12px 16px; color: var(--admin-muted); font-weight: 600; font-size: 13px; text-transform: uppercase;">Motivo de Consulta</th>
+                <th style="padding: 12px 16px; color: var(--admin-muted); font-weight: 600; font-size: 13px; text-transform: uppercase;">Estado</th>
+                <th style="padding: 12px 16px; color: var(--admin-muted); font-weight: 600; font-size: 13px; text-transform: uppercase; text-align: right;">Acciones</th>
               </tr>
             </thead>
             <tbody>
               <% citas.forEach(c => { %>
-                <tr>
-                  <td style="font-weight: 600; color: var(--admin-primary); font-family: var(--font-mono); font-size: 13px;">
-                    <%= c.hora_inicio.substring(0,5) %> - <%= c.hora_fin.substring(0,5) %>
+                <tr style="border-bottom: 1px solid #f1f5f9; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#f8fafc'" onmouseout="this.style.backgroundColor='transparent'">
+                  <td style="padding: 16px; font-weight: 600; color: var(--admin-primary); font-family: var(--font-mono); font-size: 14px;">
+                    <%= c.hora_rango || (c.hora_inicio.substring(0,5) + ' - ' + c.hora_fin.substring(0,5)) %>
                   </td>
-                  <td>
-                    <div style="font-weight: 600;"><%= c.paciente_nombre %> <%= c.paciente_apellidos %></div>
+                  <td style="padding: 16px;">
+                    <div style="font-weight: 600; color: var(--admin-text); font-size: 15px;"><%= c.nombre_paciente %> <%= c.apellidos_paciente %></div>
+                    <div style="font-size: 12px; color: var(--admin-muted); margin-top: 4px;">
+                      <span style="display: inline-block; margin-right: 10px;">🩺 DNI: <%= c.dni_paciente %></span>
+                      <span>📞 Tel: <%= c.telefono_paciente || 'No registrado' %></span>
+                    </div>
                   </td>
-                  <td style="font-family: var(--font-mono); font-size: 13px; color: var(--admin-muted);"><%= c.dni %></td>
-                  <td><%= c.telefono || '-' %></td>
-                  <td>
-                    <span style="font-style: italic; color: var(--admin-muted);"><%= c.motivo_consulta %></span>
+                  <td style="padding: 16px;">
+                    <span style="font-style: italic; color: var(--admin-muted); font-size: 14px;"><%= c.motivo %></span>
                   </td>
-                  <td>
+                  <td style="padding: 16px;">
                     <!-- Status badge -->
-                    <span class="status-badge <%= (c.estado === 'cancelada') ? 'bloqueado' : (c.estado === 'confirmada' ? 'confirmada' : (c.estado === 'atendida' ? 'activo' : 'pendiente')) %>" style="text-transform: capitalize;">
+                    <% 
+                      let badgeBg = '#f1f5f9';
+                      let badgeColor = '#64748b';
+                      if (c.estado === 'pendiente') {
+                        badgeBg = '#fef3c7'; badgeColor = '#d97706';
+                      } else if (c.estado === 'confirmada') {
+                        badgeBg = '#dcfce7'; badgeColor = '#15803d';
+                      } else if (c.estado === 'atendida') {
+                        badgeBg = '#dbeafe'; badgeColor = '#1d4ed8';
+                      } else if (c.estado === 'cancelada') {
+                        badgeBg = '#fee2e2'; badgeColor = '#b91c1c';
+                      }
+                    %>
+                    <span style="background-color: <%= badgeBg %>; color: <%= badgeColor %>; padding: 6px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600; text-transform: capitalize; display: inline-block;">
                       <%= c.estado %>
                     </span>
                   </td>
-                  <td style="text-align: right;">
+                  <td style="padding: 16px; text-align: right; white-space: nowrap;">
                     <!-- Actions -->
                     <% if (c.estado === 'pendiente') { %>
                       <form action="/medico/agenda/<%= c.id_cita %>/confirmar" method="POST" style="display:inline">
                         <input type="hidden" name="fecha" value="<%= fecha %>">
-                        <button type="submit" class="table-action-btn" style="color: #1e9e63; background: #e7f7ee; border-radius: 4px;">
-                          Confirmar
+                        <button type="submit" style="background: #22c55e; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: 500; font-size: 13px; cursor: pointer; margin-right: 8px; display: inline-flex; align-items: center; gap: 4px; transition: background 0.2s;" onmouseover="this.style.background='#16a34a'" onmouseout="this.style.background='#22c55e'">
+                          ✓ Confirmar
                         </button>
                       </form>
-                    <% } %>
-                    <% if (c.estado === 'pendiente' || c.estado === 'confirmada') { %>
+                      <form action="/medico/agenda/<%= c.id_cita %>/cancelar" method="POST" style="display:inline" onsubmit="return confirm('¿Seguro que deseas cancelar esta cita?');">
+                        <input type="hidden" name="fecha" value="<%= fecha %>">
+                        <button type="submit" style="background: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: 500; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: background 0.2s;" onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">
+                          ✕ Cancelar
+                        </button>
+                      </form>
+                    <% } else if (c.estado === 'confirmada') { %>
                       <form action="/medico/agenda/<%= c.id_cita %>/atender" method="POST" style="display:inline">
                         <input type="hidden" name="fecha" value="<%= fecha %>">
-                        <button type="submit" class="table-action-btn">
-                          Atendida
+                        <button type="submit" style="background: #3b82f6; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: 500; font-size: 13px; cursor: pointer; margin-right: 8px; display: inline-flex; align-items: center; gap: 4px; transition: background 0.2s;" onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#3b82f6'">
+                          🩺 Atender
                         </button>
                       </form>
-                      <form action="/medico/agenda/<%= c.id_cita %>/cancelar" method="POST" style="display:inline"
-                            onsubmit="return confirm('¿Seguro que deseas cancelar esta cita?');">
+                      <form action="/medico/agenda/<%= c.id_cita %>/cancelar" method="POST" style="display:inline" onsubmit="return confirm('¿Seguro que deseas cancelar esta cita?');">
                         <input type="hidden" name="fecha" value="<%= fecha %>">
-                        <button type="submit" class="table-action-btn eliminar">
-                          Cancelar
+                        <button type="submit" style="background: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: 500; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: background 0.2s;" onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">
+                          ✕ Cancelar
                         </button>
                       </form>
-                    <% } %>
-                    <% if (c.estado === 'atendida' || c.estado === 'cancelada') { %>
-                      <span style="color: var(--admin-muted); font-size: 12px;">-</span>
+                    <% } else { %>
+                      <span style="color: var(--admin-muted); font-size: 13px; font-style: italic;">Sin acciones disponibles</span>
                     <% } %>
                   </td>
                 </tr>
               <% }) %>
               <% if (citas.length === 0) { %>
                 <tr>
-                  <td colspan="7" style="text-align: center; color: var(--admin-muted); padding: 30px;">
-                    No tienes citas agendadas para este día.
+                  <td colspan="5" style="text-align: center; color: var(--admin-muted); padding: 48px 24px;">
+                    <div style="font-size: 48px; margin-bottom: 16px;">📅</div>
+                    <div style="font-size: 16px; font-weight: 500; color: var(--admin-text);">No tienes citas agendadas para este día.</div>
+                    <div style="font-size: 14px; margin-top: 8px;">Las citas aparecerán aquí una vez que los pacientes las reserven.</div>
                   </td>
                 </tr>
               <% } %>
