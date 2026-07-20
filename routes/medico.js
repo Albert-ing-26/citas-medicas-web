@@ -41,16 +41,65 @@ router.get('/', async (req, res) => {
       [req.idMedico]
     );
 
+    // PASO 2: DETECTAR "CITA EN CURSO" PARA EL BANNER
+    let citaEnCurso = null;
+    try {
+      const [citasDeHoy] = await pool.query(`
+        SELECT
+          c.id_cita,
+          c.fecha,
+          c.hora_inicio,
+          c.hora_fin,
+          c.estado,
+          u_pac.nombre AS nombre_paciente,
+          u_pac.apellidos AS apellidos_paciente
+        FROM citas c
+        INNER JOIN pacientes p ON p.id_paciente = c.id_paciente
+        INNER JOIN usuarios u_pac ON u_pac.id_usuario = p.id_usuario
+        WHERE c.id_medico = ? AND c.fecha = CURDATE() AND c.estado IN ('confirmada', 'pendiente')
+        ORDER BY c.hora_inicio ASC
+      `, [req.idMedico]);
+
+      console.log('[DEBUG] Citas de hoy encontradas:', citasDeHoy.length);
+      citasDeHoy.forEach((cita, idx) => {
+        const fechaStr = cita.fecha.toISOString().split('T')[0];
+        const inProgress = isAppointmentInProgress(fechaStr, cita.hora_inicio, cita.hora_fin);
+        console.log(`[DEBUG] Cita ${idx + 1}: ${cita.nombre_paciente} - ${cita.hora_inicio} - Estado: ${cita.estado} - En Curso: ${inProgress}`);
+      });
+
+      // Busca la primera cita que esté en curso (dentro del rango + 30 min de tolerancia)
+      for (const cita of citasDeHoy) {
+        const fechaStr = cita.fecha.toISOString().split('T')[0];
+        if (isAppointmentInProgress(fechaStr, cita.hora_inicio, cita.hora_fin) && cita.estado === 'confirmada') {
+          citaEnCurso = {
+            id_cita: cita.id_cita,
+            nombre_paciente: cita.nombre_paciente,
+            apellidos_paciente: cita.apellidos_paciente,
+            hora_inicio: cita.hora_inicio.substring(0, 5), // Formato HH:mm
+            hora_fin: cita.hora_fin.substring(0, 5)
+          };
+          console.log('[DEBUG] ✅ CITA EN CURSO DETECTADA:', citaEnCurso);
+          break;
+        }
+      }
+      if (!citaEnCurso) {
+        console.log('[DEBUG] ❌ No se detectó cita en curso (podría estar en "pendiente" o no estar en rango horario)');
+      }
+    } catch (err) {
+      console.error('Error al detectar cita en curso:', err);
+    }
+
     res.render('medico/dashboard', {
       usuario: req.session.usuario,
       citasHoy: stats.citasHoy || 0,
       citasPendientes: stats.citasPendientes || 0,
       diasBloqueados: bloqueos.aprobados || 0,
-      solicitudesPendientes: bloqueos.pendientes || 0
+      solicitudesPendientes: bloqueos.pendientes || 0,
+      citaEnCurso: citaEnCurso
     });
   } catch (err) {
     console.error(err);
-    res.render('medico/dashboard', { usuario: req.session.usuario, citasHoy: 0, citasPendientes: 0, diasBloqueados: 0, solicitudesPendientes: 0 });
+    res.render('medico/dashboard', { usuario: req.session.usuario, citasHoy: 0, citasPendientes: 0, diasBloqueados: 0, solicitudesPendientes: 0, citaEnCurso: null });
   }
 });
 
@@ -72,6 +121,100 @@ function sumarDias(fechaISO, dias) {
   const mm = (fecha.getMonth() + 1).toString().padStart(2, '0');
   const dd = fecha.getDate().toString().padStart(2, '0');
   return `${yy}-${mm}-${dd}`;
+}
+
+// ================ FUNCIONES HELPER DE TOLERANCIA DE 30 MINUTOS ================
+
+/**
+ * Devuelve true si la cita ha expirado (pasaron más de 30 minutos de la hora final)
+ * @param {string} fecha - Fecha en formato YYYY-MM-DD
+ * @param {string} horaFin - Hora en formato HH:mm:ss
+ * @returns {boolean}
+ */
+function isAppointmentExpired(fecha, horaFin) {
+  const hoy = hoyISO();
+  
+  // Si la cita es de un día anterior, está expirada
+  if (fecha < hoy) {
+    return true;
+  }
+  
+  // Si la cita es de hoy, verifica si ya pasaron 30 minutos de la hora final
+  if (fecha === hoy) {
+    const ahora = new Date();
+    const horaFinDate = new Date();
+    const [horas, minutos, segundos] = horaFin.split(':').map(Number);
+    horaFinDate.setHours(horas, minutos, segundos);
+    
+    // Suma 30 minutos a la hora final para aplicar tolerancia
+    const toleranciaMs = 30 * 60 * 1000;
+    const horaFinConTolerancia = new Date(horaFinDate.getTime() + toleranciaMs);
+    
+    return ahora > horaFinConTolerancia;
+  }
+  
+  return false;
+}
+
+/**
+ * Devuelve true si la cita está ocurriendo AHORA (dentro de su rango + tolerancia de 30 min)
+ * @param {string} fecha - Fecha en formato YYYY-MM-DD
+ * @param {string} horaInicio - Hora en formato HH:mm:ss
+ * @param {string} horaFin - Hora en formato HH:mm:ss
+ * @returns {boolean}
+ */
+function isAppointmentInProgress(fecha, horaInicio, horaFin) {
+  const hoy = hoyISO();
+  
+  // La cita debe ser de hoy para estar en progreso
+  if (fecha !== hoy) {
+    return false;
+  }
+  
+  const ahora = new Date();
+  const horaInicioDate = new Date();
+  const horaFinDate = new Date();
+  
+  const [hI, mI, sI] = horaInicio.split(':').map(Number);
+  const [hF, mF, sF] = horaFin.split(':').map(Number);
+  
+  horaInicioDate.setHours(hI, mI, sI);
+  horaFinDate.setHours(hF, mF, sF);
+  
+  // Suma 30 minutos de tolerancia a la hora final
+  const toleranciaMs = 30 * 60 * 1000;
+  const horaFinConTolerancia = new Date(horaFinDate.getTime() + toleranciaMs);
+  
+  return ahora >= horaInicioDate && ahora <= horaFinConTolerancia;
+}
+
+/**
+ * Devuelve true si un botón de acción debe estar habilitado
+ * Depende del estado actual de la cita y el tiempo transcurrido
+ * @param {string} estado - Estado actual de la cita
+ * @param {string} fecha - Fecha en formato YYYY-MM-DD
+ * @param {string} horaInicio - Hora inicio en formato HH:mm:ss
+ * @param {string} horaFin - Hora fin en formato HH:mm:ss
+ * @returns {boolean}
+ */
+function isActionButtonEnabled(estado, fecha, horaInicio, horaFin) {
+  // Solo citas confirmadas o pendientes pueden tener acciones
+  if (!['pendiente', 'confirmada'].includes(estado)) {
+    return false;
+  }
+  
+  // Si está expirada, no se puede hacer nada
+  if (isAppointmentExpired(fecha, horaFin)) {
+    return false;
+  }
+  
+  // Si está confirmada y está en progreso (o casi), se puede atender
+  if (estado === 'confirmada') {
+    return isAppointmentInProgress(fecha, horaInicio, horaFin) || 
+           !isAppointmentExpired(fecha, horaInicio);
+  }
+  
+  return true;
 }
 
 // ------------------- AGENDA -------------------
@@ -103,6 +246,23 @@ router.get('/agenda', async (req, res) => {
       ORDER BY c.hora_inicio ASC, c.id_cita ASC
     `, [idUsuarioMedico, fecha]);
 
+    // PASO 1: Agregar información de estado y habilitación de botones
+    const citasConEstado = citas.map(cita => {
+      const fechaStr = cita.fecha.toISOString().split('T')[0];
+      const isExpired = isAppointmentExpired(fechaStr, cita.hora_fin);
+      const inProgress = isAppointmentInProgress(fechaStr, cita.hora_inicio, cita.hora_fin);
+      const actionEnabled = isActionButtonEnabled(cita.estado, fechaStr, cita.hora_inicio, cita.hora_fin);
+      
+      return {
+        ...cita,
+        isExpired,
+        inProgress,
+        actionEnabled,
+        estadoVisual: isExpired ? 'ausente' : cita.estado,
+        horaMostrada: inProgress ? '⏱️ EN CURSO' : cita.hora_rango
+      };
+    });
+
     const [bloqueado] = await pool.query(
       "SELECT motivo, estado FROM dias_bloqueados WHERE id_medico = ? AND fecha = ? AND estado != 'rechazado'",
       [req.idMedico, fecha]
@@ -110,11 +270,12 @@ router.get('/agenda', async (req, res) => {
 
     res.render('medico/agenda', {
       usuario: req.session.usuario,
-      citas,
+      citas: citasConEstado,
       fecha,
       diaAnterior: sumarDias(fecha, -1),
       diaSiguiente: sumarDias(fecha, 1),
-      bloqueado: bloqueado.length > 0 ? bloqueado[0] : null
+      bloqueado: bloqueado.length > 0 ? bloqueado[0] : null,
+      hoy: hoyISO()
     });
   } catch (err) {
     console.error(err);

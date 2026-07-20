@@ -68,10 +68,18 @@
             </thead>
             <tbody>
               <% citas.forEach(c => { %>
-                <tr style="border-bottom: 1px solid #f1f5f9; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#f8fafc'" onmouseout="this.style.backgroundColor='transparent'">
-                  <td style="padding: 16px; font-weight: 600; color: var(--admin-primary); font-family: var(--font-mono); font-size: 14px;">
-                    <%= c.hora_rango || (c.hora_inicio.substring(0,5) + ' - ' + c.hora_fin.substring(0,5)) %>
+                <tr style="border-bottom: 1px solid #f1f5f9; transition: background-color 0.2s; <%= c.isExpired ? 'opacity: 0.7;' : '' %>" onmouseover="this.style.backgroundColor='#f8fafc'" onmouseout="this.style.backgroundColor='transparent'">
+                  <!-- Hora / Rango -->
+                  <td style="padding: 16px; font-weight: 600; color: <%= c.inProgress ? '#ff6f59' : 'var(--admin-primary)' %>; font-family: var(--font-mono); font-size: 14px;">
+                    <% if (c.inProgress) { %>
+                      <span style="background: linear-gradient(135deg, #ff6f59, #ff4d4d); color: white; padding: 6px 12px; border-radius: 6px; display: inline-flex; align-items: center; gap: 6px; font-weight: 700; animation: pulse 2s infinite;">
+                        ⏱️ EN CURSO
+                      </span>
+                    <% } else { %>
+                      <%= c.hora_rango || (c.hora_inicio.substring(0,5) + ' - ' + c.hora_fin.substring(0,5)) %>
+                    <% } %>
                   </td>
+                  <!-- Paciente -->
                   <td style="padding: 16px;">
                     <div style="font-weight: 600; color: var(--admin-text); font-size: 15px;"><%= c.nombre_paciente %> <%= c.apellidos_paciente %></div>
                     <div style="font-size: 12px; color: var(--admin-muted); margin-top: 4px;">
@@ -79,57 +87,104 @@
                       <span>📞 Tel: <%= c.telefono_paciente || 'No registrado' %></span>
                     </div>
                   </td>
+                  <!-- Motivo -->
                   <td style="padding: 16px;">
                     <span style="font-style: italic; color: var(--admin-muted); font-size: 14px;"><%= c.motivo %></span>
                   </td>
+                  <!-- Estado -->
                   <td style="padding: 16px;">
-                    <!-- Status badge -->
                     <% 
                       let badgeBg = '#f1f5f9';
                       let badgeColor = '#64748b';
-                      if (c.estado === 'pendiente') {
-                        badgeBg = '#fef3c7'; badgeColor = '#d97706';
+                      let badgeText = c.estado;
+                      
+                      if (c.isExpired) {
+                        badgeBg = '#d1d5db';
+                        badgeColor = '#4b5563';
+                        badgeText = 'Ausente';
+                      } else if (c.estado === 'pendiente') {
+                        badgeBg = '#fef3c7';
+                        badgeColor = '#d97706';
                       } else if (c.estado === 'confirmada') {
-                        badgeBg = '#dcfce7'; badgeColor = '#15803d';
+                        if (c.inProgress) {
+                          badgeBg = '#ff6f59';
+                          badgeColor = '#ffffff';
+                          badgeText = '🔴 En Curso';
+                        } else {
+                          badgeBg = '#dcfce7';
+                          badgeColor = '#15803d';
+                        }
                       } else if (c.estado === 'atendida') {
-                        badgeBg = '#dbeafe'; badgeColor = '#1d4ed8';
+                        badgeBg = '#dbeafe';
+                        badgeColor = '#1d4ed8';
                       } else if (c.estado === 'cancelada') {
-                        badgeBg = '#fee2e2'; badgeColor = '#b91c1c';
+                        badgeBg = '#fee2e2';
+                        badgeColor = '#b91c1c';
                       }
                     %>
-                    <span style="background-color: <%= badgeBg %>; color: <%= badgeColor %>; padding: 6px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600; text-transform: capitalize; display: inline-block;">
-                      <%= c.estado %>
+                    <span style="background-color: <%= badgeBg %>; color: <%= badgeColor %>; padding: 6px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600; text-transform: <%= c.isExpired ? 'capitalize' : 'capitalize' %>; display: inline-block;">
+                      <%= badgeText %>
                     </span>
                   </td>
+                  <!-- Acciones -->
                   <td style="padding: 16px; text-align: right; white-space: nowrap;">
-                    <!-- Actions -->
-                    <% if (c.estado === 'pendiente') { %>
+                    <% if (c.isExpired) { %>
+                      <!-- Cita expirada: sin acciones -->
+                      <span style="color: var(--admin-muted); font-size: 13px; font-style: italic;">Sin acciones</span>
+                    <% } else if (c.estado === 'pendiente') { %>
+                      <!-- Pendiente: confirmar o cancelar -->
                       <form action="/medico/agenda/<%= c.id_cita %>/confirmar" method="POST" style="display:inline">
                         <input type="hidden" name="fecha" value="<%= fecha %>">
-                        <button type="submit" style="background: #22c55e; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: 500; font-size: 13px; cursor: pointer; margin-right: 8px; display: inline-flex; align-items: center; gap: 4px; transition: background 0.2s;" onmouseover="this.style.background='#16a34a'" onmouseout="this.style.background='#22c55e'">
+                        <button type="submit" style="background: #22c55e; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: 500; font-size: 13px; cursor: pointer; margin-right: 8px; display: inline-flex; align-items: center; gap: 4px; transition: all 0.2s;" onmouseover="this.style.background='#16a34a'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#22c55e'; this.style.transform='translateY(0)'">
                           ✓ Confirmar
                         </button>
                       </form>
                       <form action="/medico/agenda/<%= c.id_cita %>/cancelar" method="POST" style="display:inline" onsubmit="return confirm('¿Seguro que deseas cancelar esta cita?');">
                         <input type="hidden" name="fecha" value="<%= fecha %>">
-                        <button type="submit" style="background: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: 500; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: background 0.2s;" onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">
+                        <button type="submit" style="background: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: 500; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: all 0.2s;" onmouseover="this.style.background='#dc2626'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#ef4444'; this.style.transform='translateY(0)'">
                           ✕ Cancelar
                         </button>
                       </form>
                     <% } else if (c.estado === 'confirmada') { %>
-                      <form action="/medico/agenda/<%= c.id_cita %>/atender" method="POST" style="display:inline">
-                        <input type="hidden" name="fecha" value="<%= fecha %>">
-                        <button type="submit" style="background: #3b82f6; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: 500; font-size: 13px; cursor: pointer; margin-right: 8px; display: inline-flex; align-items: center; gap: 4px; transition: background 0.2s;" onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#3b82f6'">
-                          🩺 Atender
+                      <% if (c.inProgress || (c.fecha === hoy && !c.isExpired)) { %>
+                        <!-- Confirmada y está en rango: mostrar botón "Atender" en azul brillante -->
+                        <form action="/medico/agenda/<%= c.id_cita %>/atender" method="POST" style="display:inline">
+                          <input type="hidden" name="fecha" value="<%= fecha %>">
+                          <button type="submit" style="
+                            background: <%= c.inProgress ? '#ff6f59' : '#3b82f6' %>;
+                            color: white;
+                            border: none;
+                            padding: 8px 12px;
+                            border-radius: 6px;
+                            font-weight: 600;
+                            font-size: 13px;
+                            cursor: pointer;
+                            margin-right: 8px;
+                            display: inline-flex;
+                            align-items: center;
+                            gap: 4px;
+                            transition: all 0.2s;
+                            box-shadow: <%= c.inProgress ? '0 4px 12px rgba(255, 111, 89, 0.4)' : '0 4px 12px rgba(59, 130, 246, 0.3)' %>;
+                          " 
+                          onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='<%= c.inProgress ? '0 6px 16px rgba(255, 111, 89, 0.5)' : '0 6px 16px rgba(59, 130, 246, 0.4)' %>'"
+                          onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='<%= c.inProgress ? '0 4px 12px rgba(255, 111, 89, 0.4)' : '0 4px 12px rgba(59, 130, 246, 0.3)' %>'">
+                            <%= c.inProgress ? '🚀 Atender Ahora' : '🩺 Atender' %>
+                          </button>
+                        </form>
+                      <% } else { %>
+                        <!-- Confirmada pero aún no es la hora: botón deshabilitado -->
+                        <button type="button" disabled style="background: #cbd5e1; color: #78909c; border: none; padding: 8px 12px; border-radius: 6px; font-weight: 500; font-size: 13px; cursor: not-allowed; margin-right: 8px; display: inline-flex; align-items: center; gap: 4px; opacity: 0.6;">
+                          ⏳ Esperar Hora
                         </button>
-                      </form>
+                      <% } %>
                       <form action="/medico/agenda/<%= c.id_cita %>/cancelar" method="POST" style="display:inline" onsubmit="return confirm('¿Seguro que deseas cancelar esta cita?');">
                         <input type="hidden" name="fecha" value="<%= fecha %>">
-                        <button type="submit" style="background: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: 500; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: background 0.2s;" onmouseover="this.style.background='#dc2626'" onmouseout="this.style.background='#ef4444'">
+                        <button type="submit" style="background: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: 500; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: all 0.2s;" onmouseover="this.style.background='#dc2626'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#ef4444'; this.style.transform='translateY(0)'">
                           ✕ Cancelar
                         </button>
                       </form>
                     <% } else { %>
+                      <!-- Otras states: atendida, cancelada -->
                       <span style="color: var(--admin-muted); font-size: 13px; font-style: italic;">Sin acciones disponibles</span>
                     <% } %>
                   </td>

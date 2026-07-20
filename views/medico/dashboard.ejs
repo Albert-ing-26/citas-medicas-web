@@ -29,6 +29,69 @@
           </div>
         </section>
 
+        <!-- PASO 3: BANNER DE CITA EN CURSO -->
+        <% if (citaEnCurso) { %>
+          <div style="
+            margin-bottom: 32px;
+            background: linear-gradient(135deg, #ff6f59 0%, #ff4d4d 100%);
+            border-left: 4px solid #ff2d2d;
+            border-radius: 12px;
+            padding: 20px 24px;
+            color: white;
+            box-shadow: 0 8px 24px rgba(255, 111, 89, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            animation: pulse 2s infinite;
+          ">
+            <style>
+              @keyframes pulse {
+                0%, 100% { box-shadow: 0 8px 24px rgba(255, 111, 89, 0.3); }
+                50% { box-shadow: 0 8px 32px rgba(255, 111, 89, 0.5); }
+              }
+            </style>
+            <div>
+              <div style="font-size: 18px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                🚨 <span>Cita en Curso Ahora</span>
+              </div>
+              <p style="margin: 0; font-size: 14px; opacity: 0.95;">
+                <strong><%= citaEnCurso.nombre_paciente %> <%= citaEnCurso.apellidos_paciente %></strong> 
+                está en su hora de cita (Horario: <%= citaEnCurso.hora_inicio %> - <%= citaEnCurso.hora_fin %>)
+              </p>
+            </div>
+            <form action="/medico/agenda/<%= citaEnCurso.id_cita %>/atender" method="POST" style="margin: 0;">
+              <%
+                const hoy = new Date();
+                const fechaHoy = hoy.getFullYear() + '-' +
+                                 String(hoy.getMonth() + 1).padStart(2, '0') + '-' +
+                                 String(hoy.getDate()).padStart(2, '0');
+              %>
+              <input type="hidden" name="fecha" value="<%= fechaHoy %>">
+              <button type="submit" style="
+                background: #ffffff;
+                color: #ff6f59;
+                border: none;
+                padding: 12px 24px;
+                border-radius: 8px;
+                font-weight: 600;
+                font-size: 14px;
+                cursor: pointer;
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+              " 
+              onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(0, 0, 0, 0.2)'"
+              onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0, 0, 0, 0.15)'">
+                💻 Iniciar Atención
+              </button>
+            </form>
+          </div>
+        <% } %>
+
         <!-- Stats Grid -->
         <div class="admin-stats-grid">
           <!-- Appointments Today -->
