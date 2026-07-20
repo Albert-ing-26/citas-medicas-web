@@ -443,6 +443,234 @@ nav::after {
 }
 
 /* ---------------------------------------------------------
+   Agenda médica interactiva
+   --------------------------------------------------------- */
+
+.agenda-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.agenda-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.agenda-subtitle {
+  margin: 6px 0 0;
+  color: var(--muted);
+  max-width: 680px;
+  line-height: 1.65;
+}
+
+.agenda-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: min(280px, 100%);
+}
+
+.agenda-nav-links {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin: 0;
+}
+
+.agenda-nav-links a {
+  color: var(--primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.agenda-nav-links a:hover {
+  text-decoration: underline;
+}
+
+.agenda-form {
+  max-width: 280px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.agenda-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 16px;
+  overflow: hidden;
+}
+
+#agendaCalendar {
+  min-height: 720px;
+  border: 1px solid #e8efec;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 10px 26px rgba(13, 42, 43, 0.08);
+  background: linear-gradient(180deg, #fcfefe 0%, #f8fbfa 100%);
+}
+
+.fc-toolbar-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  color: var(--primary-dark);
+}
+
+.fc-theme-standard td,
+.fc-theme-standard th {
+  border-color: #ecf2ef;
+}
+
+.fc-timegrid-slot {
+  border-color: #f0f3f2;
+}
+
+.fc-timegrid-slot-label {
+  color: #7d8f89;
+}
+
+.fc-event {
+  border: 0;
+  border-radius: 6px;
+  padding: 6px 8px;
+  box-shadow: 0 6px 14px rgba(13, 42, 43, 0.12);
+  color: #ffffff;
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+}
+
+.fc-event:hover {
+  transform: translateY(-1px) scale(1.01);
+  box-shadow: 0 9px 18px rgba(13, 42, 43, 0.16);
+}
+
+.fc-timegrid-event .fc-event-main {
+  padding: 2px 2px 2px 0;
+}
+
+.fc-event-title {
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.alerta-citas-container {
+  background: #e6f4f1;
+  border-left: 4px solid #0d6b6b;
+  padding: 12px 20px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  color: #0d4c4c;
+  font-weight: 500;
+  box-shadow: 0 8px 18px rgba(13, 42, 43, 0.06);
+}
+
+.agenda-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.legend-dot.pendiente { background: #f59e0b; }
+.legend-dot.confirmada { background: var(--primary); }
+.legend-dot.atendida { background: var(--ok); }
+.legend-dot.cancelada { background: var(--danger); }
+
+.agenda-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 22, 27, 0.46);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 10000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.agenda-modal.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.agenda-modal-card {
+  position: relative;
+  width: min(460px, 100%);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lift);
+  padding: 24px;
+}
+
+.agenda-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  border: none;
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 20px;
+}
+
+.agenda-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.agenda-modal-body {
+  display: grid;
+  gap: 10px;
+  margin: 16px 0 0;
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.agenda-detail-row strong {
+  color: var(--primary-dark);
+}
+
+.agenda-modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.agenda-actions {
+  display: inline-flex;
+}
+
+/* ---------------------------------------------------------
    Formularios
    --------------------------------------------------------- */
 
