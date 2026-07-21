@@ -32,13 +32,6 @@ CREATE PROCEDURE sp_registrar_paciente(
     OUT p_id_usuario INT
 )
 BEGIN
-    DECLARE EXIT HANDLER FOR SQLEXCEPTION
-    BEGIN
-        -- Ante cualquier error, deshacer los cambios
-        ROLLBACK;
-        RESIGNAL;
-    END;
-
     START TRANSACTION;
         -- 1. Insertar el registro en la tabla de autenticación general
         INSERT INTO usuarios (nombre, apellidos, correo, contrasena_hash, telefono, rol, activo)
