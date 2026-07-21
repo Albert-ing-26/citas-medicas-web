@@ -59,7 +59,7 @@
               </span>
             </td>
             <td>
-              <% if (c.estado === 'pendiente' || c.estado === 'confirmada') { %>
+              <% if (!c.esPasada && (c.estado === 'pendiente' || c.estado === 'confirmada')) { %>
                 <form action="/paciente/mis-citas/<%= c.id_cita %>/cancelar" method="POST"
                       style="display:inline"
                       onsubmit="return confirm('Seguro que deseas cancelar esta cita?');">

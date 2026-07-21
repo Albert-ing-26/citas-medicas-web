@@ -403,12 +403,39 @@ router.get('/pacientes/:id/citas', async (req, res) => {
     const paciente = pacienteRows[0];
 
     const [result] = await pool.query('CALL splistarcitaspaciente(?)', [paciente.dni]);
-    const citas = result[0];
+    const rawCitas = result[0];
+
+    const ahora = new Date();
+    const y = ahora.getFullYear();
+    const m = (ahora.getMonth() + 1).toString().padStart(2, '0');
+    const d = ahora.getDate().toString().padStart(2, '0');
+    const hoy = `${y}-${m}-${d}`;
+    const horaActual = ahora.toTimeString().split(' ')[0]; // Formato HH:MM:SS
+
+    const processedCitas = rawCitas.map(c => {
+      const fechaCitaStr = c.fecha.toISOString 
+        ? c.fecha.toISOString().substring(0, 10) 
+        : c.fecha;
+      
+      const esPasada = (fechaCitaStr < hoy) || (fechaCitaStr === hoy && c.hora_inicio < horaActual);
+      
+      let estadoMostrar = c.estado;
+      if (esPasada) {
+        if (c.estado !== 'atendida') {
+          estadoMostrar = 'cancelada';
+        }
+      }
+
+      return {
+        ...c,
+        estado: estadoMostrar
+      };
+    });
 
     res.render('admin/pacientes/citas', {
       usuario: req.session.usuario,
       paciente,
-      citas
+      citas: processedCitas
     });
   } catch (err) {
     console.error(err);

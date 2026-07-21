@@ -242,9 +242,34 @@ router.get('/mis-citas', async (req, res) => {
       ORDER BY c.fecha DESC, c.hora_inicio DESC
     `, [req.idPaciente]);
 
+    const hoy = hoyISO();
+    const ahora = new Date();
+    const horaActual = ahora.toTimeString().split(' ')[0]; // Formato HH:MM:SS
+
+    const processedCitas = citas.map(c => {
+      const fechaCitaStr = c.fecha.toISOString 
+        ? c.fecha.toISOString().substring(0, 10) 
+        : c.fecha;
+      
+      const esPasada = (fechaCitaStr < hoy) || (fechaCitaStr === hoy && c.hora_inicio < horaActual);
+      
+      let estadoMostrar = c.estado;
+      if (esPasada) {
+        if (c.estado !== 'atendida') {
+          estadoMostrar = 'cancelada';
+        }
+      }
+
+      return {
+        ...c,
+        esPasada,
+        estado: estadoMostrar
+      };
+    });
+
     res.render('paciente/mis-citas', {
       usuario: req.session.usuario,
-      citas,
+      citas: processedCitas,
       mensaje: req.query.ok ? 'Cita cancelada correctamente' : null
     });
   } catch (err) {
@@ -255,13 +280,24 @@ router.get('/mis-citas', async (req, res) => {
 
 router.post('/mis-citas/:id/cancelar', async (req, res) => {
   try {
-    // 1. Validar que la cita pertenece al paciente autenticado
+    // 1. Validar que la cita pertenece al paciente autenticado y obtener datos de fecha/hora
     const [citas] = await pool.query(
-      'SELECT 1 FROM citas WHERE id_cita = ? AND id_paciente = ?',
+      'SELECT fecha, hora_inicio FROM citas WHERE id_cita = ? AND id_paciente = ?',
       [req.params.id, req.idPaciente]
     );
     if (citas.length === 0) {
       return res.status(403).send('No tienes permiso para cancelar esta cita');
+    }
+
+    const hoy = hoyISO();
+    const ahora = new Date();
+    const horaActual = ahora.toTimeString().split(' ')[0];
+    const c = citas[0];
+    const fechaCitaStr = c.fecha.toISOString ? c.fecha.toISOString().substring(0, 10) : c.fecha;
+    const esPasada = (fechaCitaStr < hoy) || (fechaCitaStr === hoy && c.hora_inicio < horaActual);
+
+    if (esPasada) {
+      return res.status(400).send('No se puede cancelar una cita que ya pasó');
     }
 
     // 2. Llamar al procedimiento almacenado spcancelarcita
