@@ -444,6 +444,72 @@ router.post('/pacientes/:id/bloquear', async (req, res) => {
   }
 });
 
+// Mostrar formulario para editar un paciente existente
+router.get('/pacientes/:id/editar', async (req, res) => {
+  try {
+    const [rows] = await pool.query(`
+      SELECT p.id_paciente, p.dni, p.fecha_nacimiento, p.direccion,
+             u.id_usuario, u.nombre, u.apellidos, u.correo, u.telefono, u.activo
+      FROM pacientes p
+      JOIN usuarios u ON u.id_usuario = p.id_usuario
+      WHERE p.id_paciente = ?
+    `, [req.params.id]);
+
+    if (rows.length === 0) return res.redirect('/admin/pacientes');
+
+    res.render('admin/pacientes/form', {
+      usuario: req.session.usuario,
+      paciente: rows[0],
+      error: null
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error al cargar el paciente');
+  }
+});
+
+// Guardar los cambios de un paciente (solo se edita teléfono y dirección por seguridad)
+router.post('/pacientes/:id/editar', async (req, res) => {
+  const { telefono, direccion } = req.body;
+  const conn = await pool.getConnection();
+
+  try {
+    await conn.beginTransaction();
+
+    const [rows] = await conn.query(
+      'SELECT id_usuario FROM pacientes WHERE id_paciente = ?',
+      [req.params.id]
+    );
+    if (rows.length === 0) {
+      conn.release();
+      return res.redirect('/admin/pacientes');
+    }
+    const idUsuario = rows[0].id_usuario;
+
+    // Actualizar teléfono en tabla usuarios
+    await conn.query(
+      'UPDATE usuarios SET telefono = ? WHERE id_usuario = ?',
+      [telefono || null, idUsuario]
+    );
+
+    // Actualizar dirección en tabla pacientes
+    await conn.query(
+      'UPDATE pacientes SET direccion = ? WHERE id_paciente = ?',
+      [direccion || null, req.params.id]
+    );
+
+    await conn.commit();
+    res.redirect('/admin/pacientes');
+
+  } catch (err) {
+    await conn.rollback();
+    console.error(err);
+    res.status(500).send('Error al actualizar los datos del paciente');
+  } finally {
+    conn.release();
+  }
+});
+
 // Ver citas de un paciente por DNI usando el procedimiento almacenado splistarcitaspaciente
 router.get('/pacientes/:id/citas', async (req, res) => {
   try {
