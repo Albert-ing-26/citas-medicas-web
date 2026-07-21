@@ -13,16 +13,19 @@
     <% } %>
     <form action="/registro" method="POST">
       <label for="nombre">Nombre</label>
-      <input type="text" id="nombre" name="nombre" required value="<%= datos.nombre || '' %>">
+      <input type="text" id="nombre" name="nombre" required value="<%= datos.nombre || '' %>"
+             pattern="^[A-Za-záéíóúÁÉÍÓÚñÑ\s]+$" title="Solo se permiten letras y espacios">
 
       <label for="apellidos">Apellidos</label>
-      <input type="text" id="apellidos" name="apellidos" required value="<%= datos.apellidos || '' %>">
+      <input type="text" id="apellidos" name="apellidos" required value="<%= datos.apellidos || '' %>"
+             pattern="^[A-Za-záéíóúÁÉÍÓÚñÑ\s]+$" title="Solo se permiten letras y espacios">
 
       <label for="correo">Correo</label>
       <input type="email" id="correo" name="correo" required value="<%= datos.correo || '' %>">
 
       <label for="dni">DNI</label>
-      <input type="text" id="dni" name="dni" required value="<%= datos.dni || '' %>">
+      <input type="text" id="dni" name="dni" required value="<%= datos.dni || '' %>"
+             pattern="[0-9]{8}" maxlength="8" title="El DNI debe tener exactamente 8 números">
 
       <label for="telefono">Telefono</label>
       <input type="text" id="telefono" name="telefono" value="<%= datos.telefono || '' %>">

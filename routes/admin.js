@@ -169,9 +169,14 @@ router.get('/medicos', async (req, res) => {
       JOIN especialidades e ON e.id_especialidad = m.id_especialidad
       ORDER BY u.apellidos, u.nombre
     `);
+
+    const successMessage = req.session.alertaExito || null;
+    delete req.session.alertaExito;
+
     res.render('admin/medicos/index', {
       usuario: req.session.usuario,
       medicos,
+      successMessage,
       error: null
     });
   } catch (err) {
@@ -199,8 +204,24 @@ router.get('/medicos/nuevo', async (req, res) => {
 // Guardar el medico nuevo (crea usuario + perfil medico en una transaccion)
 router.post('/medicos/nuevo', async (req, res) => {
   const { nombre, apellidos, correo, telefono, id_especialidad, colegiatura, password } = req.body;
-  const conn = await pool.getConnection();
 
+  const nameRegex = /^[A-Za-záéíóúÁÉÍÓÚñÑ\s]+$/;
+  if (!nameRegex.test(nombre) || !nameRegex.test(apellidos)) {
+    try {
+      const [especialidades] = await pool.query('SELECT * FROM especialidades ORDER BY nombre');
+      return res.render('admin/medicos/form', {
+        usuario: req.session.usuario,
+        medico: { nombre, apellidos, correo, telefono, id_especialidad, colegiatura },
+        especialidades,
+        error: 'El nombre y los apellidos solo deben contener letras y espacios'
+      });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).send('Error al cargar especialidades');
+    }
+  }
+
+  const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
 
@@ -267,9 +288,29 @@ router.get('/medicos/:id/editar', async (req, res) => {
   }
 });
 
-// Guardar los cambios de un medico editado (la contrasena solo cambia si se escribe una nueva)
+// Guardar los cambios de un medico editado (la colegiatura y contraseña no se editan aquí por seguridad)
 router.post('/medicos/:id/editar', async (req, res) => {
-  const { nombre, apellidos, correo, telefono, id_especialidad, colegiatura, password } = req.body;
+  const { nombre, apellidos, correo, telefono, id_especialidad } = req.body;
+
+  const nameRegex = /^[A-Za-záéíóúÁÉÍÓÚñÑ\s]+$/;
+  if (!nameRegex.test(nombre) || !nameRegex.test(apellidos)) {
+    try {
+      const [especialidades] = await pool.query('SELECT * FROM especialidades ORDER BY nombre');
+      const [medicoRow] = await pool.query('SELECT colegiatura FROM medicos WHERE id_medico = ?', [req.params.id]);
+      const colegiatura = medicoRow.length > 0 ? medicoRow[0].colegiatura : '';
+
+      return res.render('admin/medicos/form', {
+        usuario: req.session.usuario,
+        medico: { id_medico: req.params.id, nombre, apellidos, correo, telefono, id_especialidad, colegiatura },
+        especialidades,
+        error: 'El nombre y los apellidos solo deben contener letras y espacios'
+      });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).send('Error al recargar el formulario');
+    }
+  }
+
   const conn = await pool.getConnection();
 
   try {
@@ -281,22 +322,14 @@ router.post('/medicos/:id/editar', async (req, res) => {
     );
     const idUsuario = rows[0].id_usuario;
 
-    if (password && password.trim() !== '') {
-      const hash = await bcrypt.hash(password, 10);
-      await conn.query(
-        'UPDATE usuarios SET nombre=?, apellidos=?, correo=?, telefono=?, contrasena_hash=? WHERE id_usuario=?',
-        [nombre, apellidos, correo, telefono, hash, idUsuario]
-      );
-    } else {
-      await conn.query(
-        'UPDATE usuarios SET nombre=?, apellidos=?, correo=?, telefono=? WHERE id_usuario=?',
-        [nombre, apellidos, correo, telefono, idUsuario]
-      );
-    }
+    await conn.query(
+      'UPDATE usuarios SET nombre=?, apellidos=?, correo=?, telefono=? WHERE id_usuario=?',
+      [nombre, apellidos, correo, telefono, idUsuario]
+    );
 
     await conn.query(
-      'UPDATE medicos SET id_especialidad=?, colegiatura=? WHERE id_medico=?',
-      [id_especialidad, colegiatura, req.params.id]
+      'UPDATE medicos SET id_especialidad=? WHERE id_medico=?',
+      [id_especialidad, req.params.id]
     );
 
     await conn.commit();
@@ -339,6 +372,32 @@ router.post('/medicos/:id/bloquear', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).send('Error al actualizar el estado del medico');
+  }
+});
+
+// Generar una contraseña temporal para el médico
+router.post('/medicos/:id/reset-password', async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      'SELECT id_usuario FROM medicos WHERE id_medico = ?',
+      [req.params.id]
+    );
+    if (rows.length === 0) return res.redirect('/admin/medicos');
+
+    const idUsuario = rows[0].id_usuario;
+    const tempPassword = 'Temp' + Math.floor(100000 + Math.random() * 900000) + '!';
+    const hash = await bcrypt.hash(tempPassword, 10);
+
+    await pool.query(
+      'UPDATE usuarios SET contrasena_hash = ? WHERE id_usuario = ?',
+      [hash, idUsuario]
+    );
+
+    req.session.alertaExito = `Contraseña temporal generada con éxito para el médico: ${tempPassword}`;
+    res.redirect('/admin/medicos');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error al restablecer la contraseña del médico');
   }
 });
 

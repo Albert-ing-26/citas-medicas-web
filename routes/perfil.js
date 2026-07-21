@@ -52,6 +52,22 @@ router.post('/', async (req, res) => {
   const { nombre, apellidos, correo, telefono, direccion } = req.body;
   const idUsuario = req.session.usuario.id_usuario;
 
+  const nameRegex = /^[A-Za-záéíóúÁÉÍÓÚñÑ\s]+$/;
+  if (!nameRegex.test(nombre) || !nameRegex.test(apellidos)) {
+    try {
+      const perfil = await obtenerPerfil(idUsuario);
+      return res.render('perfil', {
+        usuario: req.session.usuario,
+        perfil,
+        mensaje: null,
+        error: 'El nombre y los apellidos solo deben contener letras y espacios'
+      });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).send('Error al cargar el perfil');
+    }
+  }
+
   try {
     await pool.query(
       'UPDATE usuarios SET nombre=?, apellidos=?, correo=?, telefono=? WHERE id_usuario=?',

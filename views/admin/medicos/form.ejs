@@ -45,12 +45,14 @@
               <div class="form-group">
                 <label for="nombre">Nombre</label>
                 <input type="text" id="nombre" name="nombre" class="form-control" placeholder="Ej. Juan" required
+                       pattern="^[A-Za-záéíóúÁÉÍÓÚñÑ\s]+$" title="Solo se permiten letras y espacios"
                        value="<%= medico ? medico.nombre : '' %>">
               </div>
 
               <div class="form-group">
                 <label for="apellidos">Apellidos</label>
                 <input type="text" id="apellidos" name="apellidos" class="form-control" placeholder="Ej. Pérez..." required
+                       pattern="^[A-Za-záéíóúÁÉÍÓÚñÑ\s]+$" title="Solo se permiten letras y espacios"
                        value="<%= medico ? medico.apellidos : '' %>">
               </div>
             </div>
@@ -83,16 +85,22 @@
             <div class="form-group">
               <label for="colegiatura">Número de Colegiatura (CMP)</label>
               <input type="text" id="colegiatura" name="colegiatura" class="form-control" placeholder="CMP-XXXXXX" required
-                     value="<%= medico ? medico.colegiatura : '' %>">
+                     pattern="^[a-zA-Z0-9-]{3,15}$" title="Ejemplo: CMP-45210"
+                     value="<%= medico ? medico.colegiatura : '' %>"
+                     <%= medico && medico.id_medico ? 'readonly style="background-color: var(--admin-bg); color: var(--admin-muted); cursor: not-allowed;"' : '' %>>
+              <% if (medico && medico.id_medico) { %>
+                <small style="color: var(--admin-accent); display: block; margin-top: 4px; font-weight: 500;">
+                  ⚠️ La colegiatura no puede modificarse después del registro por motivos de seguridad.
+                </small>
+              <% } %>
             </div>
 
-            <div class="form-group">
-              <label for="password">
-                <%= medico && medico.id_medico ? 'Contraseña (dejar vacío para no cambiarla)' : 'Contraseña de Acceso' %>
-              </label>
-              <input type="password" id="password" name="password" class="form-control" placeholder="<%= medico && medico.id_medico ? '••••••••' : 'Ingrese contraseña' %>"
-                     <%= medico && medico.id_medico ? '' : 'required' %>>
-            </div>
+            <% if (!medico || !medico.id_medico) { %>
+              <div class="form-group">
+                <label for="password">Contraseña de Acceso</label>
+                <input type="password" id="password" name="password" class="form-control" placeholder="Ingrese contraseña" required>
+              </div>
+            <% } %>
 
             <div class="form-actions">
               <a href="/admin/medicos" class="btn btn-secondary">Cancelar</a>

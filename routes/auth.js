@@ -65,6 +65,23 @@ router.post('/registro', async (req, res) => {
     });
   }
 
+  const nameRegex = /^[A-Za-záéíóúÁÉÍÓÚñÑ\s]+$/;
+  const dniRegex = /^[0-9]{8}$/;
+
+  if (!nameRegex.test(nombre) || !nameRegex.test(apellidos)) {
+    return res.render('registro', {
+      error: 'El nombre y los apellidos solo deben contener letras y espacios',
+      datos: req.body
+    });
+  }
+
+  if (!dniRegex.test(dni)) {
+    return res.render('registro', {
+      error: 'El DNI debe contener exactamente 8 números',
+      datos: req.body
+    });
+  }
+
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
