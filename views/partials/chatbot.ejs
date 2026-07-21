@@ -106,9 +106,14 @@
     const nombre = JAX_USER.nombre;
     const rol    = JAX_USER.rol;
     let titulo = '';
-    if (rol === 'admin')   titulo = 'Administrador';
-    else if (rol === 'medico') titulo = 'Doctor';
-    else if (nombre)       titulo = 'Paciente';
+    
+    if (rol === 'admin') {
+      titulo = 'Administrador';
+    } else if (rol === 'medico' || rol === 'doctor') {
+      titulo = 'Doctor';
+    } else if (rol === 'paciente') {
+      titulo = 'Paciente';
+    }
 
     if (titulo && nombre) {
       return `Hola, soy tu asistente virtual Jax, ¿en qué te puedo ayudar, ${titulo} ${nombre}?`;
@@ -330,22 +335,8 @@
     renderQuickActions(getQuickActions());
     appendMessage(generarSaludoInicial(), 'bot');
 
-    // Burbuja de pensamiento simplificada: siempre el saludo inicial
+    // Burbuja de pensamiento: Desactivada de la carga automática al cambiar de panel/vista
     const bubble = document.getElementById('jax-thought-bubble');
-    const messageNode = document.getElementById('jax-bubble-message');
-    if (bubble && messageNode) {
-      messageNode.textContent = generarSaludoInicial();
-      requestAnimationFrame(() => {
-        bubble.classList.remove('is-hidden');
-        bubble.classList.add('is-visible');
-        bubble.setAttribute('aria-hidden', 'false');
-      });
-      window.jaxTimeoutId = setTimeout(() => {
-        bubble.classList.remove('is-visible');
-        bubble.classList.add('is-hidden');
-        bubble.setAttribute('aria-hidden', 'true');
-      }, 6000);
-    }
 
     button.addEventListener('click', function (event) {
       event.stopPropagation();

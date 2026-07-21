@@ -18,11 +18,22 @@ async function obtenerModelosGratuitosActivos() {
   return [];
 }
 
-// Generador de Prompts según el Rol
-function construirSystemPrompt(role) {
+// Generador de Prompts según el Rol y Nombre del Usuario
+function construirSystemPrompt(role, userName = '') {
+  let userIdentity = '';
+  if (role === 'admin') {
+    userIdentity = `Estás hablando con el Administrador ${userName}.`;
+  } else if (role === 'medico' || role === 'doctor') {
+    userIdentity = `Estás hablando con el Doctor ${userName}.`;
+  } else if (role === 'paciente') {
+    userIdentity = `Estás hablando con el Paciente ${userName}.`;
+  }
+
+  const identityPrefix = userName ? `${userIdentity}\n` : '';
+
   if (role === 'admin') {
     return `
-Eres Jax, el asistente inteligente de gestión administrativa de la plataforma "MediAdmin".
+${identityPrefix}Eres Jax, el asistente inteligente de gestión administrativa de la plataforma "MediAdmin".
 Tu interlocutor es un ADMINISTRADOR del sistema.
 
 REGLAS PARA EL ADMINISTRADOR:
@@ -35,15 +46,15 @@ REGLAS PARA EL ADMINISTRADOR:
    - Si pide métricas o resúmenes: "Consulta la sección **Reportes** en el panel lateral."
 
 2. TONO Y ESTILO:
-   - Responde de forma ejecutiva, eficiente, profesional y directa.
+   - Responde de forma ejecutiva, eficiente, profesional and directa.
    - Usa negritas para destacar las secciones del menú lateral (ej. **Médicos**, **Solicitudes**).
    - Haz referencia a las opciones rápidas disponibles como [Gestionar médicos], [Ver solicitudes] y [Reportes].
 `;
   }
 
-  if (role === 'medico') {
+  if (role === 'medico' || role === 'doctor') {
     return `
-Eres Jax, el asistente ejecutivo inteligente de la plataforma "CitasMédicas".
+${identityPrefix}Eres Jax, el asistente ejecutivo inteligente de la plataforma "CitasMédicas".
 Tu interlocutor es un MÉDICO registrado en el sistema.
 
 REGLAS PARA EL MÉDICO:
@@ -62,7 +73,7 @@ REGLAS PARA EL MÉDICO:
 
   // Por defecto / Rol Paciente
   return `
-Eres Jax, el recepcionista inteligente y doctor guía virtual del sistema "CitasMédicas".
+${identityPrefix}Eres Jax, el recepcionista inteligente y doctor guía virtual del sistema "CitasMédicas".
 Tu interlocutor es un PACIENTE.
 
 REGLAS PARA EL PACIENTE:
@@ -77,15 +88,15 @@ REGLAS PARA EL PACIENTE:
 
 router.post('/chat', async (req, res) => {
   try {
-    // Recibimos la pregunta y opcionalmente el rol ('admin', 'paciente', 'medico')
-    const { message, role = 'paciente' } = req.body;
+    // Recibimos la pregunta, el rol y el nombre del usuario
+    const { message, role = 'paciente', userName = '' } = req.body;
     const apiKey = process.env.OPENROUTER_API_KEY;
 
     if (!apiKey) {
       return res.status(500).json({ error: "Falta la clave OPENROUTER_API_KEY en el .env" });
     }
 
-    const systemPrompt = construirSystemPrompt(role);
+    const systemPrompt = construirSystemPrompt(role, userName);
     const modelosDisponibles = await obtenerModelosGratuitosActivos();
 
     if (modelosDisponibles.length === 0) {
