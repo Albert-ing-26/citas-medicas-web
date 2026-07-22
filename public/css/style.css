@@ -8,18 +8,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
 
 :root {
-  --bg: #f4f9f8;
+  --bg: #F8FAFA;
   --surface: #ffffff;
-  --ink: #16242a;
-  --muted: #5e7770;
-  --line: #dbe7e3;
+  --ink: #0B1E2D;
+  --muted: #5B6B70;
+  --line: #e6f0ed;
 
-  --primary: #0d7377;
-  --primary-dark: #0a5658;
-  --primary-light: #e5f3f2;
+  --primary: #0F766E;
+  --primary-dark: #115E59;
+  --primary-light: #E6F4F1;
 
-  --accent: #ff6f59;
-  --accent-dark: #e6543f;
+  --accent: #F97362;
+  --accent-dark: #e55f4e;
 
   --ok: #1e9e63;
   --ok-bg: #e7f7ee;
@@ -362,7 +362,7 @@ nav::after {
 }
 
 .tabla tbody tr:hover {
-  background: #f6faf9;
+  background: #f2f8f7;
 }
 
 .tabla tbody tr:last-child td {
@@ -1185,7 +1185,7 @@ body.pagina-login {
 .panel-izquierdo {
   flex: 1 1 50%;
   min-width: 0;
-  background: linear-gradient(160deg, var(--primary-dark), var(--primary) 70%);
+  background: linear-gradient(160deg, rgba(17, 94, 89, 0.9), rgba(15, 118, 110, 0.9) 70%), url('/img/login-bg.png') no-repeat center center / cover;
   color: white;
   padding: 44px 48px;
   display: flex;
@@ -1371,8 +1371,8 @@ body.pagina-login {
   width: 100%;
   text-align: center;
   padding: 12px;
-  border: 1.5px solid var(--primary);
-  color: var(--primary-dark);
+  border: 1.5px solid #14B8A6;
+  color: var(--primary);
   border-radius: var(--radius-sm);
   text-decoration: none;
   font-weight: 600;
@@ -2006,9 +2006,9 @@ body.pagina-login {
    --------------------------------------------------------- */
 
 :root {
-  --gold: #D4AF37;
-  --dark-green: #023020;
-  --teal: #008080;
+  --gold: #14B8A6;
+  --dark-green: #0F766E;
+  --teal: #14B8A6;
 }
 
 .paciente-header {
@@ -2187,10 +2187,10 @@ body.pagina-login {
   justify-content: center;
   width: 72px;
   height: 72px;
-  background: #e9f0ee; /* Menta/teal muy claro */
+  background: #E6F4F1; /* Fondo suave */
   border-radius: 20px;
   margin-bottom: 20px;
-  color: #0d3b32; /* Verde muy oscuro */
+  color: #0F766E; /* Ícono teal profundo */
 }
 
 .icono-contenedor svg {
@@ -2205,7 +2205,7 @@ body.pagina-login {
   font-family: var(--font-display);
   font-size: 19px;
   font-weight: 700;
-  color: #0d3b32;
+  color: #0B1E2D;
   margin-bottom: 12px;
   text-align: center;
 }
@@ -2221,5 +2221,5 @@ body.pagina-login {
 .tarjeta-accion-nueva .flecha {
   font-size: 14px;
   font-weight: 600;
-  color: #0d3b32;
+  color: #0F766E;
 }

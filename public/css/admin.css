@@ -4,26 +4,26 @@
    ========================================================= */
 
 :root {
-  --admin-primary: #0d7377;
-  --admin-primary-dark: #0a5658;
-  --admin-primary-light: #e6f5f4;
-  --admin-accent: #ff6f59;
-  --admin-accent-dark: #e6543f;
+  --admin-primary: #0F766E;
+  --admin-primary-dark: #115E59;
+  --admin-primary-light: #E6F4F1;
+  --admin-accent: #F97362;
+  --admin-accent-dark: #e55f4e;
   --admin-accent-light: #fff0ee;
   
-  --admin-bg: #f3f8f7;
+  --admin-bg: #F8FAFA;
   --admin-surface: #ffffff;
   --admin-surface-glass: rgba(255, 255, 255, 0.75);
-  --admin-border: #e1eeec;
+  --admin-border: #e6f0ed;
   --admin-border-glass: rgba(255, 255, 255, 0.45);
   
-  --admin-ink: #16242a;
-  --admin-muted: #5e7770;
+  --admin-ink: #0B1E2D;
+  --admin-muted: #5B6B70;
   
-  --admin-shadow-sm: 0 2px 8px rgba(13, 115, 119, 0.04);
-  --admin-shadow-md: 0 8px 30px rgba(13, 115, 119, 0.06);
-  --admin-shadow-lg: 0 16px 40px rgba(13, 115, 119, 0.1);
-  --admin-shadow-lift: 0 20px 48px rgba(13, 115, 119, 0.14);
+  --admin-shadow-sm: 0 2px 8px rgba(15, 118, 110, 0.04);
+  --admin-shadow-md: 0 8px 30px rgba(15, 118, 110, 0.06);
+  --admin-shadow-lg: 0 16px 40px rgba(15, 118, 110, 0.1);
+  --admin-shadow-lift: 0 20px 48px rgba(15, 118, 110, 0.14);
   
   --admin-radius-sm: 10px;
   --admin-radius-md: 16px;
@@ -56,7 +56,7 @@
    --------------------------------------------------------- */
 
 .admin-sidebar {
-  background: linear-gradient(135deg, var(--admin-primary-dark) 0%, var(--admin-primary) 100%);
+  background: linear-gradient(180deg, var(--admin-primary) 0%, var(--admin-primary-dark) 100%);
   color: #ffffff;
   padding: 32px 24px;
   display: flex;
@@ -398,7 +398,7 @@
 .action-card:hover {
   transform: translateY(-4px);
   box-shadow: var(--admin-shadow-lg);
-  border-color: rgba(13, 115, 119, 0.15);
+  border-color: rgba(15, 118, 110, 0.15);
 }
 
 .action-card:hover::before {
