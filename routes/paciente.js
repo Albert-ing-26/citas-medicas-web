@@ -56,6 +56,24 @@ function hoyISO() {
   return `${y}-${m}-${d}`;
 }
 
+function getReservaMinFecha() {
+  const ahora = new Date();
+  ahora.setDate(ahora.getDate() + 1); // mañana
+  const y = ahora.getFullYear();
+  const m = (ahora.getMonth() + 1).toString().padStart(2, '0');
+  const d = ahora.getDate().toString().padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function getReservaMaxFecha() {
+  const ahora = new Date();
+  ahora.setDate(ahora.getDate() + 14); // 2 semanas
+  const y = ahora.getFullYear();
+  const m = (ahora.getMonth() + 1).toString().padStart(2, '0');
+  const d = ahora.getDate().toString().padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
 router.get('/reservar', async (req, res) => {
   const { id_especialidad, id_medico, fecha } = req.query;
 
@@ -79,9 +97,13 @@ router.get('/reservar', async (req, res) => {
     let medicoSeleccionado = null;
 
     if (id_especialidad && id_medico && fecha) {
-      // Validar que la fecha no sea pasada
-      if (fecha < hoyISO()) {
-        mensajeSlots = 'No puedes reservar en una fecha pasada';
+      const minFecha = getReservaMinFecha();
+      const maxFecha = getReservaMaxFecha();
+      // Validar que la fecha no esté fuera de los límites
+      if (fecha < minFecha) {
+        mensajeSlots = 'Debes reservar con al menos 1 día de anticipación';
+      } else if (fecha > maxFecha) {
+        mensajeSlots = 'Solo puedes reservar hasta con 2 semanas de anticipación';
       } else {
         const [medicoRows] = await pool.query(`
           SELECT m.id_medico, e.duracion_cita_minutos, u.nombre, u.apellidos
@@ -142,7 +164,9 @@ router.get('/reservar', async (req, res) => {
       medicoSeleccionado,
       seleccion: { id_especialidad, id_medico, fecha },
       error: null,
-      hoy: hoyISO()
+      hoy: hoyISO(),
+      minFecha: getReservaMinFecha(),
+      maxFecha: getReservaMaxFecha()
     });
   } catch (err) {
     console.error(err);
@@ -174,7 +198,9 @@ router.post('/reservar', async (req, res) => {
       medicoSeleccionado: null,
       seleccion: { id_especialidad, id_medico, fecha },
       error: mensajeError,
-      hoy: hoyISO()
+      hoy: hoyISO(),
+      minFecha: getReservaMinFecha(),
+      maxFecha: getReservaMaxFecha()
     });
   };
 
@@ -182,8 +208,10 @@ router.post('/reservar', async (req, res) => {
     return volverAlFormulario('Completa todos los campos, incluyendo el motivo de la consulta');
   }
 
-  if (fecha < hoyISO()) {
-    return volverAlFormulario('No puedes reservar en una fecha pasada');
+  const minFecha = getReservaMinFecha();
+  const maxFecha = getReservaMaxFecha();
+  if (fecha < minFecha || fecha > maxFecha) {
+    return volverAlFormulario('La fecha seleccionada debe ser desde mañana y hasta dentro de dos semanas');
   }
 
   try {

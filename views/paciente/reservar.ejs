@@ -65,7 +65,7 @@
 
           <% if (seleccion.id_especialidad && seleccion.id_medico) { %>
             <label for="fecha">Fecha</label>
-            <input type="date" id="fecha" name="fecha" required min="<%= hoy %>"
+            <input type="date" id="fecha" name="fecha" required min="<%= minFecha %>" max="<%= maxFecha %>"
                    value="<%= seleccion.fecha || '' %>" onchange="this.form.submit()">
           <% } %>
         </form>
