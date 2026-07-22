@@ -31,7 +31,10 @@
       <input type="text" id="telefono" name="telefono" value="<%= datos.telefono || '' %>">
 
       <label for="fecha_nacimiento">Fecha de nacimiento</label>
-      <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" value="<%= datos.fecha_nacimiento || '' %>">
+      <input type="date" id="fecha_nacimiento" name="fecha_nacimiento"
+             value="<%= datos.fecha_nacimiento || '' %>"
+             required
+             title="Debe tener 18 años o más y no puede ser una fecha futura">
 
       <label for="direccion">Direccion</label>
       <input type="text" id="direccion" name="direccion" value="<%= datos.direccion || '' %>">
@@ -45,5 +48,55 @@
       <a href="/login">Ya tengo cuenta, iniciar sesion</a>
     </p>
   </div>
+<script>
+  (function () {
+    // Calcula los límites de fecha al cargar la página
+    const hoy = new Date();
+    const maxDate = hoy.toISOString().split('T')[0]; // YYYY-MM-DD de hoy
+
+    const fechaMin18 = new Date(hoy.getFullYear() - 18, hoy.getMonth(), hoy.getDate());
+    const minDate = fechaMin18.toISOString().split('T')[0]; // fecha de hace exactamente 18 años
+
+    const inputFecha = document.getElementById('fecha_nacimiento');
+    inputFecha.setAttribute('max', minDate);  // no mayor que hace 18 años
+    inputFecha.setAttribute('min', '1900-01-01');
+
+    // Validación adicional al enviar el formulario
+    const form = inputFecha.closest('form');
+    form.addEventListener('submit', function (e) {
+      const valor = inputFecha.value;
+      if (!valor) return; // si está vacío lo captura el `required` del servidor
+
+      const fechaIngresada = new Date(valor + 'T00:00:00'); // evitar desfase de zona horaria
+      const hoyMidnight = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+
+      // Regla 1: no puede ser una fecha futura
+      if (fechaIngresada > hoyMidnight) {
+        e.preventDefault();
+        mostrarError('La fecha de nacimiento no puede ser una fecha futura.');
+        inputFecha.focus();
+        return;
+      }
+
+      // Regla 2: debe tener al menos 18 años
+      if (fechaIngresada > fechaMin18) {
+        e.preventDefault();
+        mostrarError('Debe tener 18 años o más para registrarse.');
+        inputFecha.focus();
+        return;
+      }
+    });
+
+    function mostrarError(mensaje) {
+      let errorEl = document.querySelector('.error-fecha-js');
+      if (!errorEl) {
+        errorEl = document.createElement('p');
+        errorEl.className = 'error error-fecha-js';
+        inputFecha.insertAdjacentElement('afterend', errorEl);
+      }
+      errorEl.textContent = mensaje;
+    }
+  })();
+</script>
 </body>
 </html>

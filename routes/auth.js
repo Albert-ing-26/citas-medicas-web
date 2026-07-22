@@ -82,6 +82,41 @@ router.post('/registro', async (req, res) => {
     });
   }
 
+  // --- Validación de fecha de nacimiento ---
+  if (!fecha_nacimiento) {
+    return res.render('registro', {
+      error: 'La fecha de nacimiento es obligatoria',
+      datos: req.body
+    });
+  }
+
+  const fechaNac = new Date(fecha_nacimiento + 'T00:00:00');
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+
+  if (isNaN(fechaNac.getTime())) {
+    return res.render('registro', {
+      error: 'La fecha de nacimiento no es válida',
+      datos: req.body
+    });
+  }
+
+  if (fechaNac > hoy) {
+    return res.render('registro', {
+      error: 'La fecha de nacimiento no puede ser una fecha futura',
+      datos: req.body
+    });
+  }
+
+  const fechaMin18 = new Date(hoy.getFullYear() - 18, hoy.getMonth(), hoy.getDate());
+  if (fechaNac > fechaMin18) {
+    return res.render('registro', {
+      error: 'Debe tener 18 años o más para registrarse',
+      datos: req.body
+    });
+  }
+  // -----------------------------------------
+
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
