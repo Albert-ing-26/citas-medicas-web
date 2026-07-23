@@ -11,30 +11,57 @@ router.post('/login', async (req, res) => {
   const { correo, password } = req.body;
 
   try {
-    const [rows] = await pool.query(
-      'SELECT * FROM usuarios WHERE correo = ? AND activo = TRUE',
+    let usuario = null;
+    let rol = null;
+
+    const usuariosAdmin = await pool.query(
+      "SELECT id_admin AS id, nombre, apellidos, correo, contrasena_hash FROM administradores WHERE correo = ? AND estado = 'activo'",
       [correo]
     );
+    if (usuariosAdmin[0].length > 0) {
+      usuario = usuariosAdmin[0][0];
+      rol = 'admin';
+    }
 
-    if (rows.length === 0) {
+    if (!usuario) {
+      const usuariosMedico = await pool.query(
+        "SELECT id_medico AS id, nombre, apellidos, correo, contrasena_hash FROM medicos WHERE correo = ? AND estado = 'activo'",
+        [correo]
+      );
+      if (usuariosMedico[0].length > 0) {
+        usuario = usuariosMedico[0][0];
+        rol = 'medico';
+      }
+    }
+
+    if (!usuario) {
+      const usuariosPaciente = await pool.query(
+        "SELECT id_paciente AS id, nombre, apellidos, correo, contrasena_hash FROM pacientes WHERE correo = ? AND estado = 'activo'",
+        [correo]
+      );
+      if (usuariosPaciente[0].length > 0) {
+        usuario = usuariosPaciente[0][0];
+        rol = 'paciente';
+      }
+    }
+
+    if (!usuario) {
       return res.render('login', { error: 'Correo o contrasena incorrectos' });
     }
 
-    const usuario = rows[0];
     const passwordValida = await bcrypt.compare(password, usuario.contrasena_hash);
-
     if (!passwordValida) {
       return res.render('login', { error: 'Correo o contrasena incorrectos' });
     }
 
     req.session.usuario = {
-      id_usuario: usuario.id_usuario,
+      id: usuario.id,
       nombre: usuario.nombre,
-      rol: usuario.rol
+      rol
     };
 
-    if (usuario.rol === 'admin') return res.redirect('/admin');
-    if (usuario.rol === 'medico') return res.redirect('/medico');
+    if (rol === 'admin') return res.redirect('/admin');
+    if (rol === 'medico') return res.redirect('/medico');
     return res.redirect('/paciente');
 
   } catch (err) {
@@ -82,7 +109,6 @@ router.post('/registro', async (req, res) => {
     });
   }
 
-  // --- Validación de fecha de nacimiento ---
   if (!fecha_nacimiento) {
     return res.render('registro', {
       error: 'La fecha de nacimiento es obligatoria',
@@ -115,45 +141,29 @@ router.post('/registro', async (req, res) => {
       datos: req.body
     });
   }
-  // -----------------------------------------
 
-  const conn = await pool.getConnection();
   try {
-    await conn.beginTransaction();
-
     const hash = await bcrypt.hash(password, 10);
 
-    const [resultUsuario] = await conn.query(
-      `INSERT INTO usuarios (nombre, apellidos, correo, contrasena_hash, telefono, rol)
-       VALUES (?, ?, ?, ?, ?, 'paciente')`,
-      [nombre, apellidos, correo, hash, telefono || null]
+    const [resultPaciente] = await pool.query(
+      `INSERT INTO pacientes (nombre, apellidos, correo, contrasena_hash, telefono, estado, dni, fecha_nacimiento, direccion)
+       VALUES (?, ?, ?, ?, ?, 'activo', ?, ?, ?)`,
+      [nombre, apellidos, correo, hash, telefono || null, dni, fecha_nacimiento || null, direccion || null]
     );
 
-    await conn.query(
-      `INSERT INTO pacientes (id_usuario, dni, fecha_nacimiento, direccion)
-       VALUES (?, ?, ?, ?)`,
-      [resultUsuario.insertId, dni, fecha_nacimiento || null, direccion || null]
-    );
-
-    await conn.commit();
-
-    // Autologin tras registrarse
     req.session.usuario = {
-      id_usuario: resultUsuario.insertId,
+      id: resultPaciente.insertId,
       nombre,
       rol: 'paciente'
     };
     res.redirect('/paciente');
 
   } catch (err) {
-    await conn.rollback();
     console.error(err);
     const mensaje = err.code === 'ER_DUP_ENTRY'
       ? 'Ese correo o ese DNI ya estan registrados'
       : 'Ocurrio un error al registrarte, intenta de nuevo';
     res.render('registro', { error: mensaje, datos: req.body });
-  } finally {
-    conn.release();
   }
 });
 

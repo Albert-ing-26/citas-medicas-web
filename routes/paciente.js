@@ -7,16 +7,12 @@ const { generarSlots, horaAMinutos, minutosAHora } = require('../utils/horarios'
 router.use(requireRole('paciente'));
 
 // Toda ruta de paciente necesita su id_paciente (no solo el id_usuario de la sesion)
-router.use(async (req, res, next) => {
+router.use((req, res, next) => {
   try {
-    const [rows] = await pool.query(
-      'SELECT id_paciente FROM pacientes WHERE id_usuario = ?',
-      [req.session.usuario.id_usuario]
-    );
-    if (rows.length === 0) {
+    if (!req.session.usuario || req.session.usuario.rol !== 'paciente') {
       return res.status(500).send('No se encontro el perfil de paciente para este usuario');
     }
-    req.idPaciente = rows[0].id_paciente;
+    req.idPaciente = req.session.usuario.id;
     next();
   } catch (err) {
     console.error(err);
@@ -83,11 +79,10 @@ router.get('/reservar', async (req, res) => {
     let medicos = [];
     if (id_especialidad) {
       const [rows] = await pool.query(`
-        SELECT m.id_medico, u.nombre, u.apellidos
-        FROM medicos m
-        JOIN usuarios u ON u.id_usuario = m.id_usuario
-        WHERE m.id_especialidad = ? AND u.activo = TRUE
-        ORDER BY u.apellidos, u.nombre
+        SELECT id_medico, nombre, apellidos
+        FROM medicos
+        WHERE id_especialidad = ? AND estado = 'activo'
+        ORDER BY apellidos, nombre
       `, [id_especialidad]);
       medicos = rows;
     }
@@ -106,10 +101,9 @@ router.get('/reservar', async (req, res) => {
         mensajeSlots = 'Solo puedes reservar hasta con 2 semanas de anticipación';
       } else {
         const [medicoRows] = await pool.query(`
-          SELECT m.id_medico, e.duracion_cita_minutos, u.nombre, u.apellidos
+          SELECT m.id_medico, e.duracion_cita_minutos, m.nombre, m.apellidos
           FROM medicos m
           JOIN especialidades e ON e.id_especialidad = m.id_especialidad
-          JOIN usuarios u ON u.id_usuario = m.id_usuario
           WHERE m.id_medico = ? AND m.id_especialidad = ?
         `, [id_medico, id_especialidad]);
 
@@ -182,10 +176,10 @@ router.post('/reservar', async (req, res) => {
     let medicos = [];
     if (id_especialidad) {
       const [rows] = await pool.query(`
-        SELECT m.id_medico, u.nombre, u.apellidos
-        FROM medicos m JOIN usuarios u ON u.id_usuario = m.id_usuario
-        WHERE m.id_especialidad = ? AND u.activo = TRUE
-        ORDER BY u.apellidos, u.nombre
+        SELECT id_medico, nombre, apellidos
+        FROM medicos
+        WHERE id_especialidad = ? AND estado = 'activo'
+        ORDER BY apellidos, nombre
       `, [id_especialidad]);
       medicos = rows;
     }
@@ -261,10 +255,9 @@ router.get('/mis-citas', async (req, res) => {
   try {
     const [citas] = await pool.query(`
       SELECT c.id_cita, c.fecha, c.hora_inicio, c.hora_fin, c.motivo_consulta, c.estado,
-             u.nombre AS medico_nombre, u.apellidos AS medico_apellidos, e.nombre AS especialidad
+             m.nombre AS medico_nombre, m.apellidos AS medico_apellidos, e.nombre AS especialidad
       FROM citas c
       JOIN medicos m ON m.id_medico = c.id_medico
-      JOIN usuarios u ON u.id_usuario = m.id_usuario
       JOIN especialidades e ON e.id_especialidad = m.id_especialidad
       WHERE c.id_paciente = ?
       ORDER BY c.fecha DESC, c.hora_inicio DESC

@@ -1,131 +1,146 @@
 -- =========================================================
--- Sistema de Citas Médicas - Script de creación de base de datos
--- Universidad Nacional de Piura
--- Actores: Administrador, Médico, Paciente
--- Compatible con phpMyAdmin / MySQL 8+
+-- Base de datos: citasmedicas_db
+-- Diseño final: sin ciclos ni caminos duplicados (sin tabla PERSONAL)
+-- Motor: MySQL / MariaDB (compatible con phpMyAdmin)
 -- =========================================================
 
-CREATE DATABASE IF NOT EXISTS citas_medicas_db
+CREATE DATABASE IF NOT EXISTS `citasmedicas_db`
   CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-USE citas_medicas_db;
+USE `citasmedicas_db`;
 
--- ---------------------------------------------------------
--- 1. USUARIOS (tabla base de autenticación para los 3 roles)
--- ---------------------------------------------------------
-CREATE TABLE usuarios (
-    id_usuario      INT AUTO_INCREMENT PRIMARY KEY,
-    nombre          VARCHAR(80)  NOT NULL,
-    apellidos       VARCHAR(80)  NOT NULL,
-    correo          VARCHAR(120) NOT NULL UNIQUE,
-    contrasena_hash VARCHAR(255) NOT NULL,
-    telefono        VARCHAR(20),
-    rol             ENUM('admin', 'medico', 'paciente') NOT NULL,
-    activo          BOOLEAN DEFAULT TRUE,
-    fecha_registro  DATETIME DEFAULT CURRENT_TIMESTAMP
+-- =========================================================
+-- Limpieza automática de tablas existentes para reimportar
+-- =========================================================
+SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS medico_horario;
+DROP TABLE IF EXISTS dias_bloqueados;
+DROP TABLE IF EXISTS citas;
+DROP TABLE IF EXISTS medicos;
+DROP TABLE IF EXISTS administradores;
+DROP TABLE IF EXISTS pacientes;
+DROP TABLE IF EXISTS bloques_horario;
+DROP TABLE IF EXISTS especialidades;
+DROP TABLE IF EXISTS roles;
+SET FOREIGN_KEY_CHECKS = 1;
+
+-- =========================================================
+-- Tabla: ROLES (catálogo puro, sin datos de login)
+-- =========================================================
+CREATE TABLE roles (
+  id_rol      INT AUTO_INCREMENT PRIMARY KEY,
+  nombre_rol  VARCHAR(30) NOT NULL UNIQUE
 ) ENGINE=InnoDB;
 
--- ---------------------------------------------------------
--- 2. ESPECIALIDADES (catálogo)
--- ---------------------------------------------------------
+-- =========================================================
+-- Tabla: ESPECIALIDADES
+-- =========================================================
 CREATE TABLE especialidades (
-    id_especialidad     INT AUTO_INCREMENT PRIMARY KEY,
-    nombre               VARCHAR(80) NOT NULL UNIQUE,
-    duracion_cita_minutos INT NOT NULL DEFAULT 30
+  id_especialidad        INT AUTO_INCREMENT PRIMARY KEY,
+  nombre                 VARCHAR(80) NOT NULL,
+  duracion_cita_minutos  INT NOT NULL DEFAULT 20
 ) ENGINE=InnoDB;
 
--- ---------------------------------------------------------
--- 3. BLOQUES_HORARIO (catálogo fijo: mañana / tarde)
--- ---------------------------------------------------------
+-- =========================================================
+-- Tabla: BLOQUES_HORARIO
+-- =========================================================
 CREATE TABLE bloques_horario (
-    id_bloque   INT AUTO_INCREMENT PRIMARY KEY,
-    nombre      VARCHAR(40) NOT NULL,
-    hora_inicio TIME NOT NULL,
-    hora_fin    TIME NOT NULL
+  id_bloque   INT AUTO_INCREMENT PRIMARY KEY,
+  nombre      VARCHAR(40) NOT NULL,
+  hora_inicio TIME NOT NULL,
+  hora_fin    TIME NOT NULL
 ) ENGINE=InnoDB;
 
--- ---------------------------------------------------------
--- 4. MEDICOS (depende de usuarios y especialidades)
--- ---------------------------------------------------------
-CREATE TABLE medicos (
-    id_medico       INT AUTO_INCREMENT PRIMARY KEY,
-    id_usuario      INT NOT NULL UNIQUE,
-    id_especialidad INT NOT NULL,
-    colegiatura     VARCHAR(30) NOT NULL UNIQUE,
-    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario)
-        ON DELETE CASCADE,
-    FOREIGN KEY (id_especialidad) REFERENCES especialidades(id_especialidad)
-        ON DELETE RESTRICT
-) ENGINE=InnoDB;
-
--- ---------------------------------------------------------
--- 5. PACIENTES (depende de usuarios)
--- ---------------------------------------------------------
+-- =========================================================
+-- Tabla: PACIENTES (independiente, con su propio login)
+-- =========================================================
 CREATE TABLE pacientes (
-    id_paciente     INT AUTO_INCREMENT PRIMARY KEY,
-    id_usuario      INT NOT NULL UNIQUE,
-    dni             VARCHAR(15) NOT NULL UNIQUE,
-    fecha_nacimiento DATE,
-    direccion       VARCHAR(150),
-    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario)
-        ON DELETE CASCADE
+  id_paciente       INT AUTO_INCREMENT PRIMARY KEY,
+  nombre            VARCHAR(80) NOT NULL,
+  apellidos         VARCHAR(80) NOT NULL,
+  correo            VARCHAR(120) NOT NULL UNIQUE,
+  contrasena_hash   VARCHAR(255) NOT NULL,
+  telefono          VARCHAR(20),
+  estado            ENUM('activo','inactivo') NOT NULL DEFAULT 'activo',
+  fecha_registro    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  dni               VARCHAR(15) UNIQUE,
+  fecha_nacimiento  DATE,
+  direccion         VARCHAR(150)
 ) ENGINE=InnoDB;
 
--- ---------------------------------------------------------
--- 6. DIAS_BLOQUEADOS (depende de medicos)
--- ---------------------------------------------------------
-CREATE TABLE dias_bloqueados (
-    id_bloqueo INT AUTO_INCREMENT PRIMARY KEY,
-    id_medico  INT NOT NULL,
-    fecha      DATE NOT NULL,
-    motivo     VARCHAR(150),
-    FOREIGN KEY (id_medico) REFERENCES medicos(id_medico)
-        ON DELETE CASCADE,
-    UNIQUE (id_medico, fecha)
+-- =========================================================
+-- Tabla: ADMINISTRADORES (login propio + FK a ROLES)
+-- =========================================================
+CREATE TABLE administradores (
+  id_admin          INT AUTO_INCREMENT PRIMARY KEY,
+  id_rol            INT NOT NULL,
+  nombre            VARCHAR(80) NOT NULL,
+  apellidos         VARCHAR(80) NOT NULL,
+  correo            VARCHAR(120) NOT NULL UNIQUE,
+  contrasena_hash   VARCHAR(255) NOT NULL,
+  telefono          VARCHAR(20),
+  estado            ENUM('activo','inactivo') NOT NULL DEFAULT 'activo',
+  fecha_registro    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_admin_rol FOREIGN KEY (id_rol) REFERENCES roles(id_rol)
 ) ENGINE=InnoDB;
 
--- ---------------------------------------------------------
--- 7. CITAS (depende de medicos y pacientes)
--- ---------------------------------------------------------
+-- =========================================================
+-- Tabla: MEDICOS (login propio + FK a ROLES y ESPECIALIDADES)
+-- =========================================================
+CREATE TABLE medicos (
+  id_medico         INT AUTO_INCREMENT PRIMARY KEY,
+  id_rol            INT NOT NULL,
+  id_especialidad   INT NOT NULL,
+  nombre            VARCHAR(80) NOT NULL,
+  apellidos         VARCHAR(80) NOT NULL,
+  correo            VARCHAR(120) NOT NULL UNIQUE,
+  contrasena_hash   VARCHAR(255) NOT NULL,
+  telefono          VARCHAR(20),
+  estado            ENUM('activo','inactivo') NOT NULL DEFAULT 'activo',
+  fecha_registro    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  colegiatura       VARCHAR(30) NOT NULL UNIQUE,
+  CONSTRAINT fk_medico_rol          FOREIGN KEY (id_rol)          REFERENCES roles(id_rol),
+  CONSTRAINT fk_medico_especialidad FOREIGN KEY (id_especialidad) REFERENCES especialidades(id_especialidad)
+) ENGINE=InnoDB;
+
+-- =========================================================
+-- Tabla: CITAS
+-- =========================================================
 CREATE TABLE citas (
-    id_cita        INT AUTO_INCREMENT PRIMARY KEY,
-    id_medico      INT NOT NULL,
-    id_paciente    INT NOT NULL,
-    fecha          DATE NOT NULL,
-    hora_inicio    TIME NOT NULL,
-    hora_fin       TIME NOT NULL,
-    motivo_consulta VARCHAR(255) NOT NULL,
-    estado         ENUM('pendiente', 'confirmada', 'cancelada', 'atendida')
-                   NOT NULL DEFAULT 'pendiente',
-    fecha_registro DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_medico) REFERENCES medicos(id_medico)
-        ON DELETE CASCADE,
-    FOREIGN KEY (id_paciente) REFERENCES pacientes(id_paciente)
-        ON DELETE CASCADE,
-    -- Evita que dos pacientes reserven el mismo horario con el mismo médico
-    UNIQUE (id_medico, fecha, hora_inicio)
+  id_cita          INT AUTO_INCREMENT PRIMARY KEY,
+  id_medico        INT NOT NULL,
+  id_paciente      INT NOT NULL,
+  fecha            DATE NOT NULL,
+  hora_inicio      TIME NOT NULL,
+  hora_fin         TIME NOT NULL,
+  motivo_consulta  VARCHAR(255),
+  estado           ENUM('pendiente','confirmada','cancelada','atendida') NOT NULL DEFAULT 'pendiente',
+  fecha_registro   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_cita_medico   FOREIGN KEY (id_medico)   REFERENCES medicos(id_medico),
+  CONSTRAINT fk_cita_paciente FOREIGN KEY (id_paciente) REFERENCES pacientes(id_paciente)
 ) ENGINE=InnoDB;
 
--- ---------------------------------------------------------
--- Índices adicionales útiles para las consultas más comunes
--- ---------------------------------------------------------
-CREATE INDEX idx_citas_paciente ON citas(id_paciente);
-CREATE INDEX idx_citas_medico_fecha ON citas(id_medico, fecha);
+-- =========================================================
+-- Tabla: DIAS_BLOQUEADOS
+-- =========================================================
+CREATE TABLE dias_bloqueados (
+  id_bloqueo  INT AUTO_INCREMENT PRIMARY KEY,
+  id_medico   INT NOT NULL,
+  fecha       DATE NOT NULL,
+  motivo      VARCHAR(150),
+  estado      ENUM('pendiente','aprobado','rechazado') NOT NULL DEFAULT 'pendiente',
+  CONSTRAINT fk_bloqueo_medico FOREIGN KEY (id_medico) REFERENCES medicos(id_medico)
+) ENGINE=InnoDB;
 
--- ---------------------------------------------------------
--- 8. DISPARADORES (TRIGGERS) DE SEGURIDAD
--- ---------------------------------------------------------
-DELIMITER //
-CREATE TRIGGER bloquear_borrado_usuarios
-BEFORE DELETE ON usuarios
-FOR EACH ROW
-BEGIN
-    -- Bloquear si el usuario es paciente o médico
-    IF OLD.rol IN ('paciente', 'medico') THEN
-        SIGNAL SQLSTATE '45000' 
-        SET MESSAGE_TEXT = 'ERROR: Por seguridad de la clínica, no se permite eliminar médicos ni pacientes físicamente. Use la opción de bloquear.';
-    END IF;
-END;
-//
-DELIMITER ;
+-- =========================================================
+-- Tabla: MEDICO_HORARIO
+-- =========================================================
+CREATE TABLE medico_horario (
+  id_medico_horario  INT AUTO_INCREMENT PRIMARY KEY,
+  id_medico          INT NOT NULL,
+  id_bloque          INT NOT NULL,
+  dia_semana         ENUM('lunes','martes','miercoles','jueves','viernes','sabado','domingo') NOT NULL,
+  CONSTRAINT fk_medhor_medico FOREIGN KEY (id_medico) REFERENCES medicos(id_medico),
+  CONSTRAINT fk_medhor_bloque FOREIGN KEY (id_bloque) REFERENCES bloques_horario(id_bloque)
+) ENGINE=InnoDB;
 

@@ -1,106 +1,57 @@
 -- =========================================================
--- Sistema de Citas Médicas - Nuevos Procedimientos Almacenados
--- Universidad Nacional de Piura
--- Compatible con MySQL 8+ / MariaDB
--- (Excluye procedimientos preexistentes del sistema)
+-- Base de datos: citasmedicas_db
+-- Diseño final: sin ciclos ni caminos duplicados (sin tabla PERSONAL)
+-- Motor: MySQL / MariaDB (compatible con phpMyAdmin)
 -- =========================================================
 
-USE citas_medicas_db;
-
--- Eliminar procedimientos previos si existen para evitar conflictos en la importación
-DROP PROCEDURE IF EXISTS sp_registrar_paciente;
-DROP PROCEDURE IF EXISTS splistarcitasmedico;
-DROP PROCEDURE IF EXISTS sp_toggle_estado_medico;
-DROP PROCEDURE IF EXISTS sp_toggle_estado_paciente;
+USE `citasmedicas_db`;
 
 DELIMITER //
 
--- ---------------------------------------------------------
--- 1. REGISTRO DE PACIENTE
--- Inserta la cuenta en la tabla 'usuarios' y su perfil en
--- la tabla 'pacientes' de manera transaccional.
--- ---------------------------------------------------------
-CREATE PROCEDURE sp_registrar_paciente(
-    IN p_nombre VARCHAR(80),
-    IN p_apellidos VARCHAR(80),
-    IN p_correo VARCHAR(120),
-    IN p_contrasena_hash VARCHAR(255),
-    IN p_telefono VARCHAR(20),
-    IN p_dni VARCHAR(15),
-    IN p_fecha_nacimiento DATE,
-    IN p_direccion VARCHAR(150),
-    OUT p_id_usuario INT
-)
+CREATE PROCEDURE spCancelarCita(IN p_id_cita INT)
 BEGIN
-    START TRANSACTION;
-        -- 1. Insertar el registro en la tabla de autenticación general
-        INSERT INTO usuarios (nombre, apellidos, correo, contrasena_hash, telefono, rol, activo)
-        VALUES (p_nombre, p_apellidos, p_correo, p_contrasena_hash, p_telefono, 'paciente', TRUE);
-        
-        -- 2. Obtener el ID autogenerado
-        SET p_id_usuario = LAST_INSERT_ID();
-        
-        -- 3. Insertar la extensión del perfil de paciente
-        INSERT INTO pacientes (id_usuario, dni, fecha_nacimiento, direccion)
-        VALUES (p_id_usuario, p_dni, p_fecha_nacimiento, p_direccion);
-    COMMIT;
+  DECLARE v_estado VARCHAR(20);
+
+  SELECT estado INTO v_estado FROM citas WHERE id_cita = p_id_cita;
+
+  IF v_estado IS NULL THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La cita no existe';
+  ELSEIF v_estado NOT IN ('pendiente','confirmada') THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'La cita no puede cancelarse en su estado actual';
+  ELSE
+    UPDATE citas SET estado = 'cancelada' WHERE id_cita = p_id_cita;
+  END IF;
 END //
 
--- ---------------------------------------------------------
--- 2. LISTAR CITAS POR MÉDICO
--- Obtiene la agenda de citas de un médico para un día específico.
--- ---------------------------------------------------------
-CREATE PROCEDURE splistarcitasmedico(
-    IN p_id_usuario_medico INT,
-    IN p_fecha DATE
-)
+CREATE PROCEDURE spListarCitasPaciente(IN p_dni VARCHAR(15))
 BEGIN
-    SELECT
-        c.id_cita,
-        c.fecha,
-        c.hora_inicio,
-        c.hora_fin,
-        CONCAT(TIME_FORMAT(c.hora_inicio, '%H:%i'), ' - ', TIME_FORMAT(c.hora_fin, '%H:%i')) AS hora_rango,
-        c.motivo_consulta AS motivo,
-        c.estado,
-        u_pac.nombre AS nombre_paciente,
-        u_pac.apellidos AS apellidos_paciente,
-        p.dni AS dni_paciente,
-        u_pac.telefono AS telefono_paciente
-    FROM citas c
-    INNER JOIN medicos m ON m.id_medico = c.id_medico
-    INNER JOIN pacientes p ON p.id_paciente = c.id_paciente
-    INNER JOIN usuarios u_pac ON u_pac.id_usuario = p.id_usuario
-    WHERE m.id_usuario = p_id_usuario_medico AND c.fecha = p_fecha
-    ORDER BY c.hora_inicio ASC, c.id_cita ASC;
+  SELECT c.id_cita, c.fecha, c.hora_inicio, c.hora_fin, c.motivo_consulta, c.estado,
+         m.nombre AS nombre_medico, m.apellidos AS apellidos_medico,
+         e.nombre AS especialidad
+  FROM citas c
+  JOIN pacientes p       ON p.id_paciente = c.id_paciente
+  JOIN medicos m         ON m.id_medico = c.id_medico
+  JOIN especialidades e  ON e.id_especialidad = m.id_especialidad
+  WHERE p.dni = p_dni
+  ORDER BY c.fecha DESC;
 END //
 
--- ---------------------------------------------------------
--- 3. BLOQUEAR O REACTIVAR CUENTA DE MÉDICO
--- Alterna el estado activo/inactivo (campo 'activo') del usuario médico.
--- ---------------------------------------------------------
-CREATE PROCEDURE sp_toggle_estado_medico(
-    IN p_id_medico INT
-)
+CREATE PROCEDURE spMedicosXEspecialidad(IN p_especialidad VARCHAR(80))
 BEGIN
-    UPDATE usuarios u
-    INNER JOIN medicos m ON m.id_usuario = u.id_usuario
-    SET u.activo = NOT u.activo
-    WHERE m.id_medico = p_id_medico;
+  SELECT m.id_medico, m.nombre, m.apellidos, m.colegiatura, m.correo, m.telefono,
+         e.nombre AS especialidad, e.duracion_cita_minutos
+  FROM medicos m
+  JOIN especialidades e ON e.id_especialidad = m.id_especialidad
+  WHERE e.nombre = p_especialidad
+    AND m.estado = 'activo';
 END //
 
--- ---------------------------------------------------------
--- 4. BLOQUEAR O REACTIVAR CUENTA DE PACIENTE
--- Alterna el estado activo/inactivo (campo 'activo') del usuario paciente.
--- ---------------------------------------------------------
-CREATE PROCEDURE sp_toggle_estado_paciente(
-    IN p_id_paciente INT
-)
+CREATE PROCEDURE spReporteCitasXEstado(IN p_fecha_desde DATE, IN p_fecha_hasta DATE)
 BEGIN
-    UPDATE usuarios u
-    INNER JOIN pacientes p ON p.id_usuario = u.id_usuario
-    SET u.activo = NOT u.activo
-    WHERE p.id_paciente = p_id_paciente;
+  SELECT estado, COUNT(*) AS total_citas
+  FROM citas
+  WHERE fecha BETWEEN p_fecha_desde AND p_fecha_hasta
+  GROUP BY estado;
 END //
 
 DELIMITER ;

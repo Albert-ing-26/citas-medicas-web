@@ -9,16 +9,12 @@ router.use(requireRole('admin'));
 router.get('/', async (req, res) => {
   try {
     const [[especialidades]] = await pool.query('SELECT COUNT(*) AS total FROM especialidades');
-    const [[medicos]] = await pool.query(`
-      SELECT COUNT(*) AS total FROM medicos m
-      JOIN usuarios u ON u.id_usuario = m.id_usuario
-      WHERE u.activo = TRUE
-    `);
-    const [[pacientes]] = await pool.query(`
-      SELECT COUNT(*) AS total FROM pacientes p
-      JOIN usuarios u ON u.id_usuario = p.id_usuario
-      WHERE u.activo = TRUE
-    `);
+    const [[medicos]] = await pool.query(
+      "SELECT COUNT(*) AS total FROM medicos WHERE estado = 'activo'"
+    );
+    const [[pacientes]] = await pool.query(
+      "SELECT COUNT(*) AS total FROM pacientes WHERE estado = 'activo'"
+    );
     const [[citasHoy]] = await pool.query(
       `SELECT COUNT(*) AS total FROM citas WHERE fecha = CURDATE() AND estado != 'cancelada'`
     );
@@ -162,12 +158,11 @@ router.post('/especialidades/:id/eliminar', async (req, res) => {
 router.get('/medicos', async (req, res) => {
   try {
     const [medicos] = await pool.query(`
-      SELECT m.id_medico, m.colegiatura, u.nombre, u.apellidos, u.correo,
-             u.telefono, u.activo, e.nombre AS especialidad
+      SELECT m.id_medico, m.colegiatura, m.nombre, m.apellidos, m.correo,
+             m.telefono, m.estado = 'activo' AS activo, e.nombre AS especialidad
       FROM medicos m
-      JOIN usuarios u ON u.id_usuario = m.id_usuario
       JOIN especialidades e ON e.id_especialidad = m.id_especialidad
-      ORDER BY u.apellidos, u.nombre
+      ORDER BY m.apellidos, m.nombre
     `);
 
     const successMessage = req.session.alertaExito || null;
@@ -223,22 +218,14 @@ router.post('/medicos/nuevo', async (req, res) => {
 
   const conn = await pool.getConnection();
   try {
-    await conn.beginTransaction();
-
     const hash = await bcrypt.hash(password, 10);
 
-    const [resultUsuario] = await conn.query(
-      `INSERT INTO usuarios (nombre, apellidos, correo, contrasena_hash, telefono, rol)
-       VALUES (?, ?, ?, ?, ?, 'medico')`,
-      [nombre, apellidos, correo, hash, telefono]
+    await pool.query(
+      `INSERT INTO medicos (nombre, apellidos, correo, contrasena_hash, telefono, estado, id_especialidad, colegiatura)
+       VALUES (?, ?, ?, ?, ?, 'activo', ?, ?)`,
+      [nombre, apellidos, correo, hash, telefono || null, id_especialidad, colegiatura]
     );
 
-    await conn.query(
-      'INSERT INTO medicos (id_usuario, id_especialidad, colegiatura) VALUES (?, ?, ?)',
-      [resultUsuario.insertId, id_especialidad, colegiatura]
-    );
-
-    await conn.commit();
     res.redirect('/admin/medicos');
 
   } catch (err) {
@@ -266,9 +253,8 @@ router.get('/medicos/:id/editar', async (req, res) => {
   try {
     const [rows] = await pool.query(`
       SELECT m.id_medico, m.id_especialidad, m.colegiatura,
-             u.id_usuario, u.nombre, u.apellidos, u.correo, u.telefono
+             m.nombre, m.apellidos, m.correo, m.telefono
       FROM medicos m
-      JOIN usuarios u ON u.id_usuario = m.id_usuario
       WHERE m.id_medico = ?
     `, [req.params.id]);
 
@@ -316,20 +302,9 @@ router.post('/medicos/:id/editar', async (req, res) => {
   try {
     await conn.beginTransaction();
 
-    const [rows] = await conn.query(
-      'SELECT id_usuario FROM medicos WHERE id_medico = ?',
-      [req.params.id]
-    );
-    const idUsuario = rows[0].id_usuario;
-
     await conn.query(
-      'UPDATE usuarios SET nombre=?, apellidos=?, correo=?, telefono=? WHERE id_usuario=?',
-      [nombre, apellidos, correo, telefono, idUsuario]
-    );
-
-    await conn.query(
-      'UPDATE medicos SET id_especialidad=? WHERE id_medico=?',
-      [id_especialidad, req.params.id]
+      'UPDATE medicos SET nombre=?, apellidos=?, correo=?, telefono=?, id_especialidad=? WHERE id_medico=?',
+      [nombre, apellidos, correo, telefono || null, id_especialidad, req.params.id]
     );
 
     await conn.commit();
@@ -358,16 +333,10 @@ router.post('/medicos/:id/editar', async (req, res) => {
 // Bloquear o reactivar la cuenta de un medico (activo = FALSE le impide iniciar sesion)
 router.post('/medicos/:id/bloquear', async (req, res) => {
   try {
-    const [rows] = await pool.query(
-      'SELECT id_usuario FROM medicos WHERE id_medico = ?',
+    await pool.query(
+      "UPDATE medicos SET estado = CASE WHEN estado = 'activo' THEN 'inactivo' ELSE 'activo' END WHERE id_medico = ?",
       [req.params.id]
     );
-    if (rows.length > 0) {
-      await pool.query(
-        'UPDATE usuarios SET activo = NOT activo WHERE id_usuario = ?',
-        [rows[0].id_usuario]
-      );
-    }
     res.redirect('/admin/medicos');
   } catch (err) {
     console.error(err);
@@ -379,18 +348,17 @@ router.post('/medicos/:id/bloquear', async (req, res) => {
 router.post('/medicos/:id/reset-password', async (req, res) => {
   try {
     const [rows] = await pool.query(
-      'SELECT id_usuario FROM medicos WHERE id_medico = ?',
+      'SELECT id_medico FROM medicos WHERE id_medico = ?',
       [req.params.id]
     );
     if (rows.length === 0) return res.redirect('/admin/medicos');
 
-    const idUsuario = rows[0].id_usuario;
     const tempPassword = 'Temp' + Math.floor(100000 + Math.random() * 900000) + '!';
     const hash = await bcrypt.hash(tempPassword, 10);
 
     await pool.query(
-      'UPDATE usuarios SET contrasena_hash = ? WHERE id_usuario = ?',
-      [hash, idUsuario]
+      'UPDATE medicos SET contrasena_hash = ? WHERE id_medico = ?',
+      [hash, req.params.id]
     );
 
     req.session.alertaExito = `Contraseña temporal generada con éxito para el médico: ${tempPassword}`;
@@ -407,11 +375,10 @@ router.post('/medicos/:id/reset-password', async (req, res) => {
 router.get('/pacientes', async (req, res) => {
   try {
     const [pacientes] = await pool.query(`
-      SELECT p.id_paciente, p.dni, p.fecha_nacimiento, p.direccion,
-             u.id_usuario, u.nombre, u.apellidos, u.correo, u.telefono, u.activo
-      FROM pacientes p
-      JOIN usuarios u ON u.id_usuario = p.id_usuario
-      ORDER BY u.apellidos, u.nombre
+      SELECT id_paciente, dni, fecha_nacimiento, direccion,
+             nombre, apellidos, correo, telefono, estado = 'activo' AS activo
+      FROM pacientes
+      ORDER BY apellidos, nombre
     `);
     res.render('admin/pacientes/index', {
       usuario: req.session.usuario,
@@ -427,16 +394,10 @@ router.get('/pacientes', async (req, res) => {
 // Bloquear o reactivar la cuenta de un paciente (activo = FALSE le impide iniciar sesion)
 router.post('/pacientes/:id/bloquear', async (req, res) => {
   try {
-    const [rows] = await pool.query(
-      'SELECT id_usuario FROM pacientes WHERE id_paciente = ?',
+    await pool.query(
+      "UPDATE pacientes SET estado = CASE WHEN estado = 'activo' THEN 'inactivo' ELSE 'activo' END WHERE id_paciente = ?",
       [req.params.id]
     );
-    if (rows.length > 0) {
-      await pool.query(
-        'UPDATE usuarios SET activo = NOT activo WHERE id_usuario = ?',
-        [rows[0].id_usuario]
-      );
-    }
     res.redirect('/admin/pacientes');
   } catch (err) {
     console.error(err);
@@ -448,11 +409,10 @@ router.post('/pacientes/:id/bloquear', async (req, res) => {
 router.get('/pacientes/:id/editar', async (req, res) => {
   try {
     const [rows] = await pool.query(`
-      SELECT p.id_paciente, p.dni, p.fecha_nacimiento, p.direccion,
-             u.id_usuario, u.nombre, u.apellidos, u.correo, u.telefono, u.activo
-      FROM pacientes p
-      JOIN usuarios u ON u.id_usuario = p.id_usuario
-      WHERE p.id_paciente = ?
+      SELECT id_paciente, dni, fecha_nacimiento, direccion,
+             nombre, apellidos, correo, telefono, estado = 'activo' AS activo
+      FROM pacientes
+      WHERE id_paciente = ?
     `, [req.params.id]);
 
     if (rows.length === 0) return res.redirect('/admin/pacientes');
@@ -474,28 +434,9 @@ router.post('/pacientes/:id/editar', async (req, res) => {
   const conn = await pool.getConnection();
 
   try {
-    await conn.beginTransaction();
-
-    const [rows] = await conn.query(
-      'SELECT id_usuario FROM pacientes WHERE id_paciente = ?',
-      [req.params.id]
-    );
-    if (rows.length === 0) {
-      conn.release();
-      return res.redirect('/admin/pacientes');
-    }
-    const idUsuario = rows[0].id_usuario;
-
-    // Actualizar teléfono en tabla usuarios
     await conn.query(
-      'UPDATE usuarios SET telefono = ? WHERE id_usuario = ?',
-      [telefono || null, idUsuario]
-    );
-
-    // Actualizar dirección en tabla pacientes
-    await conn.query(
-      'UPDATE pacientes SET direccion = ? WHERE id_paciente = ?',
-      [direccion || null, req.params.id]
+      'UPDATE pacientes SET telefono = ?, direccion = ? WHERE id_paciente = ?',
+      [telefono || null, direccion || null, req.params.id]
     );
 
     await conn.commit();
@@ -514,10 +455,9 @@ router.post('/pacientes/:id/editar', async (req, res) => {
 router.get('/pacientes/:id/citas', async (req, res) => {
   try {
     const [pacienteRows] = await pool.query(
-      `SELECT p.dni, u.nombre, u.apellidos
-       FROM pacientes p
-       JOIN usuarios u ON u.id_usuario = p.id_usuario
-       WHERE p.id_paciente = ?`,
+      `SELECT dni, nombre, apellidos
+       FROM pacientes
+       WHERE id_paciente = ?`,
       [req.params.id]
     );
 
@@ -594,16 +534,15 @@ router.get('/reportes', async (req, res) => {
     );
 
     const [porMedico] = await pool.query(
-      `SELECT u.nombre, u.apellidos, esp.nombre AS especialidad,
+      `SELECT m.nombre, m.apellidos, esp.nombre AS especialidad,
               COUNT(c.id_cita) AS total,
               SUM(c.estado = 'atendida') AS atendidas,
               SUM(c.estado = 'cancelada') AS canceladas
        FROM citas c
        JOIN medicos m ON m.id_medico = c.id_medico
-       JOIN usuarios u ON u.id_usuario = m.id_usuario
        JOIN especialidades esp ON esp.id_especialidad = m.id_especialidad
        WHERE c.fecha BETWEEN ? AND ?
-       GROUP BY m.id_medico, u.nombre, u.apellidos, esp.nombre
+       GROUP BY m.id_medico, m.nombre, m.apellidos, esp.nombre
        ORDER BY total DESC`,
       [fechaDesde, fechaHasta]
     );
@@ -637,13 +576,12 @@ router.get('/solicitudes-bloqueo', async (req, res) => {
   try {
     const [solicitudes] = await pool.query(`
       SELECT b.id_bloqueo, b.fecha, b.motivo, b.estado,
-             u.nombre, u.apellidos, e.nombre AS especialidad,
+             m.nombre, m.apellidos, e.nombre AS especialidad,
              (SELECT COUNT(*) FROM citas c
               WHERE c.id_medico = b.id_medico AND c.fecha = b.fecha
                 AND c.estado IN ('pendiente','confirmada')) AS citas_afectadas
       FROM dias_bloqueados b
       JOIN medicos m ON m.id_medico = b.id_medico
-      JOIN usuarios u ON u.id_usuario = m.id_usuario
       JOIN especialidades e ON e.id_especialidad = m.id_especialidad
       ORDER BY (b.estado = 'pendiente') DESC, b.fecha
     `);

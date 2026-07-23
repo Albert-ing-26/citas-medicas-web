@@ -6,16 +6,12 @@ const { requireRole } = require('../middlewares/auth');
 router.use(requireRole('medico'));
 
 // Toda ruta de medico necesita su id_medico (no solo el id_usuario de la sesion)
-router.use(async (req, res, next) => {
+router.use((req, res, next) => {
   try {
-    const [rows] = await pool.query(
-      'SELECT id_medico FROM medicos WHERE id_usuario = ?',
-      [req.session.usuario.id_usuario]
-    );
-    if (rows.length === 0) {
+    if (!req.session.usuario || req.session.usuario.rol !== 'medico') {
       return res.status(500).send('No se encontro el perfil de medico para este usuario');
     }
-    req.idMedico = rows[0].id_medico;
+    req.idMedico = req.session.usuario.id;
     next();
   } catch (err) {
     console.error(err);
@@ -51,11 +47,10 @@ router.get('/', async (req, res) => {
           c.hora_inicio,
           c.hora_fin,
           c.estado,
-          u_pac.nombre AS nombre_paciente,
-          u_pac.apellidos AS apellidos_paciente
+          p.nombre AS nombre_paciente,
+          p.apellidos AS apellidos_paciente
         FROM citas c
         INNER JOIN pacientes p ON p.id_paciente = c.id_paciente
-        INNER JOIN usuarios u_pac ON u_pac.id_usuario = p.id_usuario
         WHERE c.id_medico = ? AND c.fecha = CURDATE() AND c.estado IN ('confirmada', 'pendiente')
         ORDER BY c.hora_inicio ASC
       `, [req.idMedico]);
@@ -223,8 +218,6 @@ router.get('/agenda', async (req, res) => {
   const fecha = req.query.fecha || hoyISO();
 
   try {
-    const idUsuarioMedico = req.session.usuario?.id_usuario;
-
     const [citas] = await pool.query(`
       SELECT
         c.id_cita,
@@ -234,17 +227,16 @@ router.get('/agenda', async (req, res) => {
         CONCAT(TIME_FORMAT(c.hora_inicio, '%H:%i'), ' - ', TIME_FORMAT(c.hora_fin, '%H:%i')) AS hora_rango,
         c.motivo_consulta AS motivo,
         c.estado,
-        u_pac.nombre AS nombre_paciente,
-        u_pac.apellidos AS apellidos_paciente,
+        p.nombre AS nombre_paciente,
+        p.apellidos AS apellidos_paciente,
         p.dni AS dni_paciente,
-        u_pac.telefono AS telefono_paciente
+        p.telefono AS telefono_paciente
       FROM citas c
       INNER JOIN medicos m ON m.id_medico = c.id_medico
       INNER JOIN pacientes p ON p.id_paciente = c.id_paciente
-      INNER JOIN usuarios u_pac ON u_pac.id_usuario = p.id_usuario
-      WHERE m.id_usuario = ? AND c.fecha = ?
+      WHERE m.id_medico = ? AND c.fecha = ?
       ORDER BY c.hora_inicio ASC, c.id_cita ASC
-    `, [idUsuarioMedico, fecha]);
+    `, [req.idMedico, fecha]);
 
     // PASO 1: Agregar información de estado y habilitación de botones
     const citasConEstado = citas.map(cita => {

@@ -3,44 +3,60 @@
 -- Ejecutar DESPUÉS de 01_schema.sql
 -- =========================================================
 
-USE citas_medicas_db;
+USE `citasmedicas_db`;
 
 -- ---------------------------------------------------------
--- Especialidades (duración de cita distinta por especialidad)
+-- Limpiar datos previos y preparar el seed
+-- ---------------------------------------------------------
+SET FOREIGN_KEY_CHECKS = 0;
+DELETE FROM medico_horario;
+DELETE FROM dias_bloqueados;
+DELETE FROM citas;
+DELETE FROM medicos;
+DELETE FROM pacientes;
+DELETE FROM administradores;
+DELETE FROM especialidades;
+DELETE FROM bloques_horario;
+DELETE FROM roles;
+SET FOREIGN_KEY_CHECKS = 1;
+
+-- ---------------------------------------------------------
+-- Roles base
+-- ---------------------------------------------------------
+INSERT INTO roles (nombre_rol) VALUES
+  ('admin'),
+  ('medico');
+
+-- ---------------------------------------------------------
+-- Especialidades
 -- ---------------------------------------------------------
 INSERT INTO especialidades (nombre, duracion_cita_minutos) VALUES
-('Medicina General', 20),
-('Pediatría', 30),
-('Cardiología', 45),
-('Dermatología', 30),
-('Ginecología', 30);
+  ('Medicina General', 20),
+  ('Cardiología', 30),
+  ('Dermatología', 25),
+  ('Pediatría', 20);
 
 -- ---------------------------------------------------------
--- Bloques de horario fijo (con hora de almuerzo excluida)
+-- Bloques de horario fijo
 -- ---------------------------------------------------------
 INSERT INTO bloques_horario (nombre, hora_inicio, hora_fin) VALUES
-('Mañana', '07:00:00', '12:00:00'),
-('Tarde', '14:00:00', '22:00:00');
+  ('Mañana', '08:00:00', '13:00:00'),
+  ('Tarde',  '14:00:00', '19:00:00');
 
 -- ---------------------------------------------------------
--- Usuarios demo (contraseña para los 3: Demo1234)
--- Hash generado con bcrypt (10 rounds)
+-- Administrador de ejemplo
 -- ---------------------------------------------------------
-INSERT INTO usuarios (nombre, apellidos, correo, contrasena_hash, telefono, rol) VALUES
-('Carlos', 'Ramírez Vega', 'admin@citasmedicas.com', '$2b$10$Nokp9Sq5v7HFB8vQlBqk1.7.3IIoR6zRhc4XmiQffzsgdrhUhYT9i', '999111222', 'admin'),
-('Ana', 'Torres Chunga', 'ana.torres@citasmedicas.com', '$2b$10$Nokp9Sq5v7HFB8vQlBqk1.7.3IIoR6zRhc4XmiQffzsgdrhUhYT9i', '999333444', 'medico'),
-('Jorge', 'Vílchez Peña', 'jorge.vilchez@correo.com', '$2b$10$Nokp9Sq5v7HFB8vQlBqk1.7.3IIoR6zRhc4XmiQffzsgdrhUhYT9i', '999555666', 'paciente');
+INSERT INTO administradores (id_rol, nombre, apellidos, correo, contrasena_hash, telefono, estado) VALUES
+  (1, 'Carlos', 'Ramírez Vega', 'admin@citasmedicas.com', '$2b$10$myonADkcROSbxDA7kGJzcuKHS1yajLkiK/NYhd89AGRERPqkt3r3K', '999111222', 'activo');
 
 -- ---------------------------------------------------------
--- Perfil de médico (vinculado al usuario 'Ana Torres')
+-- Médico de ejemplo
 -- ---------------------------------------------------------
-INSERT INTO medicos (id_usuario, id_especialidad, colegiatura)
-SELECT id_usuario, 1, 'CMP-45210'
-FROM usuarios WHERE correo = 'ana.torres@citasmedicas.com';
+INSERT INTO medicos (id_rol, id_especialidad, nombre, apellidos, correo, contrasena_hash, telefono, estado, colegiatura) VALUES
+  (2, 2, 'Ana', 'Torres Chunga', 'medico@citasmedicas.com', '$2b$10$vmIi4kxB0nyYz9a05qzWbugKip6.fSN5gYD0X8ANBx5q8f5nkc2TS', '999333444', 'activo', 'CMP-45210');
 
 -- ---------------------------------------------------------
--- Perfil de paciente (vinculado al usuario 'Jorge Vílchez')
+-- Paciente de ejemplo
 -- ---------------------------------------------------------
-INSERT INTO pacientes (id_usuario, dni, fecha_nacimiento, direccion)
-SELECT id_usuario, '45210678', '1998-05-14', 'Av. Grau 450, Piura'
-FROM usuarios WHERE correo = 'jorge.vilchez@correo.com';
+INSERT INTO pacientes (nombre, apellidos, correo, contrasena_hash, telefono, estado, dni, fecha_nacimiento, direccion) VALUES
+  ('Jorge', 'Vílchez Peña', 'paciente@citasmedicas.com', '$2b$10$JbxxJbLu58pAZFZhA5GnTuWSnwzvwkwGygS4OI8wkV4YGi74peWIq', '999555666', 'activo', '45210678', '1998-05-14', 'Av. Grau 450, Piura');
